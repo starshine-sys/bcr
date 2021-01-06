@@ -23,6 +23,8 @@ type Command struct {
 	// Usage is appended to the command name in help commands
 	Usage string
 
+	CustomPermissions func(*Context) (string, bool)
+
 	subCmds map[string]*Command
 	subMu   sync.RWMutex
 

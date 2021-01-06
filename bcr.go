@@ -26,6 +26,7 @@ type Router struct {
 	Session *state.State
 	Bot     *discord.User
 
+	BlacklistFunc   func(*Context) bool
 	HelpCommand     func(*Context) error
 	DefaultMentions *api.AllowedMentions
 	EmbedColor      discord.Color

@@ -63,13 +63,27 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 	// if the command is guild-only, and this isn't a guild channel, error
 	if c.GuildOnly && ctx.Message.GuildID == 0 {
 		_, err = ctx.Send(":x: This command cannot be run in DMs.", nil)
-		return err
+		if err != nil {
+			return err
+		}
+		return errCommandRun
+	}
+
+	// check if the command can be blacklisted
+	if r.BlacklistFunc != nil && c.Blacklistable {
+		// if the channel's blacklisted, return
+		if r.BlacklistFunc(ctx) {
+			return errCommandRun
+		}
 	}
 
 	// if the command requires bot owner to use, and the user isn't a bot owner, error
 	if !ctx.checkOwner() {
 		_, err = ctx.Send(":x: This command can only be used by a bot owner.", nil)
-		return err
+		if err != nil {
+			return err
+		}
+		return errCommandRun
 	}
 
 	// if the command requires extra permissions
@@ -88,10 +102,26 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		}
 	}
 
+	// if the command has a custom permission handler, check it
+	if c.CustomPermissions != nil {
+		s, b := c.CustomPermissions(ctx)
+		// if it returned false, error and return
+		if !b {
+			_, err = ctx.Send(":x: You are not allowed to use this command:\n> "+s, nil)
+			if err != nil {
+				return err
+			}
+			return errCommandRun
+		}
+	}
+
 	// check for a cooldown
 	if r.cooldowns.Get(strings.Join(ctx.fullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID) {
 		_, err = ctx.Send(fmt.Sprintf(":x: This command can only be run once every %v.", c.Cooldown), nil)
-		return
+		if err != nil {
+			return err
+		}
+		return errCommandRun
 	}
 
 	// execute the command
