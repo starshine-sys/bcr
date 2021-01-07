@@ -8,6 +8,8 @@ func (ctx *Context) AddMessageHandler(
 	user discord.UserID,
 	fn func(*Context, discord.Message),
 ) {
+	ctx.Router.messageMu.Lock()
+	defer ctx.Router.messageMu.Unlock()
 	ctx.Router.messages[messageKey{
 		channelID: c,
 		userID:    user,

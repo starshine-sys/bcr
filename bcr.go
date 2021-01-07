@@ -34,8 +34,12 @@ type Router struct {
 	cooldowns *CooldownCache
 	cmds      map[string]*Command
 	cmdMu     sync.RWMutex
-	reactions map[reactionKey]reactionInfo
-	messages  map[messageKey]messageInfo
+
+	// maps + mutexes
+	reactions  map[reactionKey]reactionInfo
+	reactionMu sync.RWMutex
+	messages   map[messageKey]messageInfo
+	messageMu  sync.RWMutex
 }
 
 // NewRouter creates a new router object

@@ -20,10 +20,15 @@ type reactionKey struct {
 
 // ReactionAdd runs when a reaction is added to a message
 func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
+	r.reactionMu.Lock()
+	defer r.reactionMu.Unlock()
 	if v, ok := r.reactions[reactionKey{
 		messageID: e.MessageID,
 		emoji:     e.Emoji.APIString(),
 	}]; ok {
+		// immediately unlock it just in case
+		r.reactionMu.Unlock()
+
 		// handle deleting the reaction
 		// only delete if:
 		// - the user isn't the user the reaction's for
@@ -45,16 +50,20 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 
 		// if the handler should be deleted after running, do that
 		if v.deleteOnTrigger {
+			r.reactionMu.Lock()
 			delete(r.reactions, reactionKey{
 				messageID: e.MessageID,
 				emoji:     e.Emoji.APIString(),
 			})
+			r.reactionMu.Unlock()
 		}
 	}
 }
 
 // ReactionMessageDelete cleans up old handlers on deleted messages
 func (r *Router) ReactionMessageDelete(m *gateway.MessageDeleteEvent) {
+	r.reactionMu.Lock()
+	defer r.reactionMu.Unlock()
 	for k := range r.reactions {
 		if k.messageID == m.ID {
 			delete(r.reactions, k)
@@ -64,6 +73,8 @@ func (r *Router) ReactionMessageDelete(m *gateway.MessageDeleteEvent) {
 
 // DeleteReactions deletes all reactions for a message
 func (r *Router) DeleteReactions(m discord.MessageID) {
+	r.reactionMu.Lock()
+	defer r.reactionMu.Unlock()
 	for k := range r.reactions {
 		if k.messageID == m {
 			delete(r.reactions, k)
