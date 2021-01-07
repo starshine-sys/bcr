@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/diamondburned/arikawa/bot/extras/shellwords"
+	"github.com/diamondburned/arikawa/v2/bot/extras/shellwords"
 	"github.com/diamondburned/arikawa/v2/discord"
 	"github.com/diamondburned/arikawa/v2/state"
 )
