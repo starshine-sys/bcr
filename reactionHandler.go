@@ -26,9 +26,6 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 		messageID: e.MessageID,
 		emoji:     e.Emoji.APIString(),
 	}]; ok {
-		// immediately unlock it just in case
-		r.reactionMu.Unlock()
-
 		// handle deleting the reaction
 		// only delete if:
 		// - the user isn't the user the reaction's for
@@ -50,12 +47,10 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 
 		// if the handler should be deleted after running, do that
 		if v.deleteOnTrigger {
-			r.reactionMu.Lock()
 			delete(r.reactions, reactionKey{
 				messageID: e.MessageID,
 				emoji:     e.Emoji.APIString(),
 			})
-			r.reactionMu.Unlock()
 		}
 	}
 }

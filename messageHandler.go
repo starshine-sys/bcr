@@ -22,20 +22,17 @@ func (r *Router) MsgHandlerCreate(e *gateway.MessageCreateEvent) {
 		return
 	}
 
-	r.messageMu.RLock()
-	defer r.messageMu.RUnlock()
+	r.messageMu.Lock()
+	defer r.messageMu.Unlock()
 	if v, ok := r.messages[messageKey{
 		channelID: e.ChannelID,
 		userID:    e.Author.ID,
 	}]; ok {
-		r.messageMu.RUnlock()
 		// delete the handler
-		r.messageMu.Lock()
 		delete(r.messages, messageKey{
 			channelID: e.ChannelID,
 			userID:    e.Author.ID,
 		})
-		r.messageMu.Unlock()
 
 		// run the handler
 		v.fn(v.ctx, e.Message)
