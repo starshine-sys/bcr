@@ -61,3 +61,12 @@ func (r *Router) ReactionMessageDelete(m *gateway.MessageDeleteEvent) {
 		}
 	}
 }
+
+// DeleteReactions deletes all reactions for a message
+func (r *Router) DeleteReactions(m discord.MessageID) {
+	for k := range r.reactions {
+		if k.messageID == m {
+			delete(r.reactions, k)
+		}
+	}
+}

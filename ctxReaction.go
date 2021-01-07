@@ -21,3 +21,43 @@ func (ctx *Context) AddReactionHandler(
 		deleteReaction:  deleteReaction,
 	}
 }
+
+// AddYesNoHandler adds a reaction handler for the given message
+func (ctx *Context) AddYesNoHandler(
+	msg discord.MessageID,
+	user discord.UserID,
+	yesFn func(*Context),
+	noFn func(*Context),
+) {
+	// yes handler
+	ctx.Router.reactions[reactionKey{
+		messageID: msg,
+		emoji:     discord.APIEmoji("✅"),
+	}] = reactionInfo{
+		userID: user,
+		ctx:    ctx,
+		fn: func(ctx *Context) {
+			yesFn(ctx)
+
+			ctx.Router.DeleteReactions(msg)
+		},
+		deleteOnTrigger: false,
+		deleteReaction:  false,
+	}
+
+	// no handler
+	ctx.Router.reactions[reactionKey{
+		messageID: msg,
+		emoji:     discord.APIEmoji("❌"),
+	}] = reactionInfo{
+		userID: user,
+		ctx:    ctx,
+		fn: func(ctx *Context) {
+			yesFn(ctx)
+
+			ctx.Router.DeleteReactions(msg)
+		},
+		deleteOnTrigger: false,
+		deleteReaction:  false,
+	}
+}
