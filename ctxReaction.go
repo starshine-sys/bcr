@@ -24,14 +24,18 @@ func (ctx *Context) AddReactionHandler(
 
 // AddYesNoHandler adds a reaction handler for the given message
 func (ctx *Context) AddYesNoHandler(
-	msg discord.MessageID,
+	msg discord.Message,
 	user discord.UserID,
 	yesFn func(*Context),
 	noFn func(*Context),
 ) {
+	// react with the correct emojis
+	ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("✅"))
+	ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("❌"))
+
 	// yes handler
 	ctx.Router.reactions[reactionKey{
-		messageID: msg,
+		messageID: msg.ID,
 		emoji:     discord.APIEmoji("✅"),
 	}] = reactionInfo{
 		userID: user,
@@ -39,7 +43,7 @@ func (ctx *Context) AddYesNoHandler(
 		fn: func(ctx *Context) {
 			yesFn(ctx)
 
-			ctx.Router.DeleteReactions(msg)
+			ctx.Router.DeleteReactions(msg.ID)
 		},
 		deleteOnTrigger: false,
 		deleteReaction:  false,
@@ -47,15 +51,15 @@ func (ctx *Context) AddYesNoHandler(
 
 	// no handler
 	ctx.Router.reactions[reactionKey{
-		messageID: msg,
+		messageID: msg.ID,
 		emoji:     discord.APIEmoji("❌"),
 	}] = reactionInfo{
 		userID: user,
 		ctx:    ctx,
 		fn: func(ctx *Context) {
-			yesFn(ctx)
+			noFn(ctx)
 
-			ctx.Router.DeleteReactions(msg)
+			ctx.Router.DeleteReactions(msg.ID)
 		},
 		deleteOnTrigger: false,
 		deleteReaction:  false,

@@ -25,13 +25,13 @@ func (r *Router) MsgHandlerCreate(e *gateway.MessageCreateEvent) {
 		channelID: e.ChannelID,
 		userID:    e.Author.ID,
 	}]; ok {
-		// run the handler
-		v.fn(v.ctx, e.Message)
-
 		// delete the handler
 		delete(r.messages, messageKey{
 			channelID: e.ChannelID,
 			userID:    e.Author.ID,
 		})
+
+		// run the handler
+		v.fn(v.ctx, e.Message)
 	}
 }
