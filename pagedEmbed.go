@@ -2,7 +2,6 @@ package bcr
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v2/discord"
@@ -94,7 +93,5 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed) (msg *discord.Message, er
 		ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
 		ctx.AdditionalParams["page"] = len(embeds) - 1
 	})
-
-	fmt.Println(len(ctx.Router.reactions))
 	return
 }
