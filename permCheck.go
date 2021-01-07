@@ -98,3 +98,22 @@ func (ctx *Context) checkOwner() bool {
 
 	return false
 }
+
+// checkBotSendPerms checks if the bot can send messages in a channel
+func (ctx *Context) checkBotSendPerms(e bool) bool {
+	perms, err := ctx.Session.Permissions(ctx.Channel.ID, ctx.Bot.ID)
+	if err != nil {
+		return false
+	}
+
+	// if the bot requires embed links but doesn't have it, return false
+	if e && perms&discord.PermissionEmbedLinks != discord.PermissionEmbedLinks {
+		return false
+	}
+
+	if perms&discord.PermissionViewChannel == discord.PermissionViewChannel && perms&discord.PermissionSendMessages == discord.PermissionSendMessages {
+		return true
+	}
+
+	return false
+}
