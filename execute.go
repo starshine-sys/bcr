@@ -60,8 +60,8 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 	// set the context's Cmd field to the command
 	ctx.Cmd = c
 
-	// if the command is guild-only, and this isn't a guild channel, error
-	if c.GuildOnly && ctx.Message.GuildID == 0 {
+	// if the command is guild-only or needs extra permissions, and this isn't a guild channel, error
+	if (c.GuildOnly || c.Permissions != 0) && ctx.Message.GuildID == 0 {
 		_, err = ctx.Send(":x: This command cannot be run in DMs.", nil)
 		if err != nil {
 			return err

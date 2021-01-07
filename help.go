@@ -71,38 +71,37 @@ func (ctx *Context) Help(path []string) (err error) {
 	}
 	fields = append(fields, discord.EmbedField{
 		Name:  "Usage",
-		Value: fmt.Sprintf("```\n%v%v %v\n```", ctx.Router.Prefixes[0], strings.Join(path, " "), cmd.Usage),
+		Value: fmt.Sprintf("`%v %v`", strings.Join(path, " "), cmd.Usage),
 	})
 	if cmd.Permissions != 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Required permissions",
-			Value: fmt.Sprintf("```\n%v\n```", strings.Join(PermStrings(cmd.Permissions), ", ")),
+			Value: fmt.Sprintf("`%v`", strings.Join(PermStrings(cmd.Permissions), ", ")),
 		})
 	}
 	if len(cmd.Aliases) != 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Aliases",
-			Value: fmt.Sprintf("```\n%v\n```", strings.Join(cmd.Aliases, ", ")),
+			Value: fmt.Sprintf("`%v`", strings.Join(cmd.Aliases, ", ")),
 		})
 	}
 	if cmd.subCmds != nil {
 		var b strings.Builder
 		var i int
-		b.WriteString("```")
 		for _, v := range cmd.subCmds {
 			i++
 			// if this is the last command, add a *special* list thingy
 			if i == len(cmd.subCmds) {
-				b.WriteString("└─ ")
+				b.WriteString("`└─ ")
 			} else {
-				b.WriteString("├─ ")
+				b.WriteString("`├─ ")
 			}
 			b.WriteString(v.Name)
+			b.WriteString("`")
 			if i != len(cmd.subCmds) {
 				b.WriteString("\n")
 			}
 		}
-		b.WriteString("```")
 		fields = append(fields, discord.EmbedField{
 			Name:  "Subcommand(s)",
 			Value: b.String(),

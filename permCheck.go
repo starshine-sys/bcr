@@ -101,6 +101,11 @@ func (ctx *Context) checkOwner() bool {
 
 // checkBotSendPerms checks if the bot can send messages in a channel
 func (ctx *Context) checkBotSendPerms(e bool) bool {
+	// if this is a DM channel we always have perms
+	if ctx.Message.GuildID == 0 {
+		return true
+	}
+
 	perms, err := ctx.Session.Permissions(ctx.Channel.ID, ctx.Bot.ID)
 	if err != nil {
 		return false
