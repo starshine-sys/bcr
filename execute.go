@@ -41,6 +41,12 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	// if the command has subcommands, try those
 	if c.subCmds != nil && len(ctx.Args) > 0 {
+		// need to do this in case there's no subcommand run
+		var (
+			oldCmd  = ctx.Command
+			oldRaw  = ctx.RawArgs
+			oldArgs = ctx.Args
+		)
 		// shift all arguments over by 1
 		ctx.Command = ctx.Args[0]
 		if len(ctx.Args) > 0 {
@@ -55,6 +61,11 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		if err != nil {
 			return err
 		}
+
+		// no sub command was run so shift the args back
+		ctx.Command = oldCmd
+		ctx.RawArgs = oldRaw
+		ctx.Args = oldArgs
 	}
 
 	// set the context's Cmd field to the command
