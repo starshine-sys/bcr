@@ -70,6 +70,18 @@ func NewRouter(s *state.State, owners, prefixes []string) *Router {
 	return r
 }
 
+// NewWithState creates a new router with a state.
+// The token is automatically prefixed with `Bot `.
+func NewWithState(token string, owners, prefixes []string) (*Router, error) {
+	s, err := state.NewWithIntents("Bot "+token, RequiredIntents)
+	if err != nil {
+		return nil, err
+	}
+
+	r := NewRouter(s, owners, prefixes)
+	return r, nil
+}
+
 // AddCommand adds a command to the router
 func (r *Router) AddCommand(c *Command) *Command {
 	r.cmdMu.Lock()
