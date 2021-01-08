@@ -43,3 +43,17 @@ func (ctx *Context) GreedyRoleParser(args []string) (roles []*discord.Role, n in
 	}
 	return roles, -1
 }
+
+// GreedyUserParser parses all arguments until it finds an error.
+// Returns the parsed users and the position at which it stopped.
+// If all arguments were parsed as users, returns -1.
+func (ctx *Context) GreedyUserParser(args []string) (users []*discord.User, n int) {
+	for i, a := range args {
+		c, err := ctx.ParseUser(a)
+		if err != nil {
+			return users, i
+		}
+		users = append(users, c)
+	}
+	return users, -1
+}

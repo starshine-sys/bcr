@@ -21,6 +21,7 @@ var (
 	ErrInvalidMention  = errors.New("invalid mention")
 	ErrChannelNotFound = errors.New("channel not found")
 	ErrMemberNotFound  = errors.New("member not found")
+	ErrUserNotFound    = errors.New("user not found")
 	ErrRoleNotFound    = errors.New("role not found")
 )
 
@@ -147,4 +148,29 @@ func (ctx *Context) ParseRole(s string) (c *discord.Role, err error) {
 		}
 	}
 	return nil, ErrChannelNotFound
+}
+
+// ParseUser finds a user by mention or ID
+func (ctx *Context) ParseUser(s string) (u *discord.User, err error) {
+	if idRegex.MatchString(s) {
+		sf, err := discord.ParseSnowflake(s)
+		if err != nil {
+			return nil, err
+		}
+		return ctx.Session.User(discord.UserID(sf))
+	}
+
+	if userMentionRegex.MatchString(s) {
+		matches := userMentionRegex.FindStringSubmatch(s)
+		if len(matches) < 2 {
+			return nil, ErrInvalidMention
+		}
+		sf, err := discord.ParseSnowflake(matches[1])
+		if err != nil {
+			return nil, err
+		}
+		return ctx.Session.User(discord.UserID(sf))
+	}
+
+	return nil, ErrUserNotFound
 }
