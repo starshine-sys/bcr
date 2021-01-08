@@ -1,5 +1,7 @@
 github.com/ReneKroon/ttlcache/v2 v2.1.0 h1:5GQZXf7Pl68S4O/Mps4kAXQ+ObEqwHskC8WKT77mHiQ=
 github.com/ReneKroon/ttlcache/v2 v2.1.0/go.mod h1:0E5EIhFJrGmcn/niHrqnnvQHvihj+DdPzJlOEzBS3o4=
+github.com/Starshine113/snowflake v0.2.0 h1:1RFxWvmivFU0rXpAlWXT+CnGpe1ob3Xvu9dzocV/vWs=
+github.com/Starshine113/snowflake v0.2.0/go.mod h1:wF7EwiI447m0O6sCbQ9E8ml1X3CQl4TLy3K72INMh04=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

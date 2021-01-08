@@ -84,6 +84,7 @@ func NewWithState(token string, owners, prefixes []string) (*Router, error) {
 
 // AddCommand adds a command to the router
 func (r *Router) AddCommand(c *Command) *Command {
+	c.id = sGen.Get()
 	r.cmdMu.Lock()
 	defer r.cmdMu.Unlock()
 	r.cmds[strings.ToLower(c.Name)] = c

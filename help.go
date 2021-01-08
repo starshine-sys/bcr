@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Starshine113/snowflake"
 	"github.com/diamondburned/arikawa/v2/discord"
 )
 
@@ -86,19 +87,29 @@ func (ctx *Context) Help(path []string) (err error) {
 		})
 	}
 	if cmd.subCmds != nil {
+		// deduplicate subcommands
+		sf := make([]snowflake.Snowflake, 0)
+		subCmds := make([]*Command, 0)
+		for _, c := range cmd.subCmds {
+			if !snowflakeInSlice(c.id, sf) {
+				sf = append(sf, c.id)
+				subCmds = append(subCmds, c)
+			}
+		}
+
 		var b strings.Builder
 		var i int
-		for _, v := range cmd.subCmds {
+		for _, v := range subCmds {
 			i++
 			// if this is the last command, add a *special* list thingy
-			if i == len(cmd.subCmds) {
+			if i == len(subCmds) {
 				b.WriteString("`└─ ")
 			} else {
 				b.WriteString("`├─ ")
 			}
 			b.WriteString(v.Name)
 			b.WriteString("`")
-			if i != len(cmd.subCmds) {
+			if i != len(subCmds) {
 				b.WriteString("\n")
 			}
 		}

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Starshine113/snowflake"
 	"github.com/diamondburned/arikawa/v2/discord"
 )
 
@@ -34,10 +35,14 @@ type Command struct {
 	GuildOnly bool
 	OwnerOnly bool
 	Cooldown  time.Duration
+
+	// id is a unique ID. This is automatically generated on startup and is (pretty much) guaranteed to be unique *per session*. This ID will *not* be consistent between restarts.
+	id snowflake.Snowflake
 }
 
 // AddSubcommand adds a subcommand to a command
 func (c *Command) AddSubcommand(sub *Command) *Command {
+	sub.id = sGen.Get()
 	c.subMu.Lock()
 	defer c.subMu.Unlock()
 	if c.subCmds == nil {
