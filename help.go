@@ -72,7 +72,7 @@ func (ctx *Context) Help(path []string) (err error) {
 	}
 	fields = append(fields, discord.EmbedField{
 		Name:  "Usage",
-		Value: usageString,
+		Value: "`" + usageString + "`",
 	})
 	if cmd.Permissions != 0 {
 		fields = append(fields, discord.EmbedField{
