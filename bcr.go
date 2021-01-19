@@ -65,8 +65,6 @@ func NewRouter(s *state.State, owners, prefixes []string) *Router {
 	r.Session.AddHandler(r.ReactionMessageDelete)
 	r.Session.AddHandler(r.MsgHandlerCreate)
 
-	// set help command
-	r.HelpCommand = r.DefaultHelpCommand
 	return r
 }
 
