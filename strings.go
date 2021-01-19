@@ -62,6 +62,11 @@ func EscapeBackticks(s string) string {
 	return s
 }
 
+// AsCode returns the given string as code, correctly escaped
+func AsCode(s string) string {
+	return "``" + EscapeBackticks(s) + "``"
+}
+
 // DefaultValue returns the second value if the first is empty
 func DefaultValue(s, def string) string {
 	if s != "" {

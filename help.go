@@ -1,16 +1,12 @@
 package bcr
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Starshine113/snowflake"
 	"github.com/diamondburned/arikawa/v2/discord"
 )
-
-// used internally to stop execution if a help command was invoked
-var errHelpInvoked = errors.New("help invoked")
 
 func (ctx *Context) tryHelp() error {
 	// if there's no args return nil
@@ -70,9 +66,13 @@ func (ctx *Context) Help(path []string) (err error) {
 			Value: cmd.Description,
 		})
 	}
+	usageString := strings.Join(path, " ")
+	if cmd.Usage != "" {
+		usageString += " " + cmd.Usage
+	}
 	fields = append(fields, discord.EmbedField{
 		Name:  "Usage",
-		Value: fmt.Sprintf("`%v %v`", strings.Join(path, " "), cmd.Usage),
+		Value: usageString,
 	})
 	if cmd.Permissions != 0 {
 		fields = append(fields, discord.EmbedField{

@@ -11,7 +11,7 @@ func (ctx *Context) AddReactionHandler(
 	fn func(*Context),
 ) {
 	ctx.Router.reactionMu.Lock()
-	defer ctx.Router.reactionMu.Unlock()
+
 	ctx.Router.reactions[reactionKey{
 		messageID: msg,
 		emoji:     discord.APIEmoji(reaction),
@@ -22,6 +22,8 @@ func (ctx *Context) AddReactionHandler(
 		deleteOnTrigger: deleteOnTrigger,
 		deleteReaction:  deleteReaction,
 	}
+
+	ctx.Router.reactionMu.Unlock()
 }
 
 // AddYesNoHandler adds a reaction handler for the given message
@@ -33,7 +35,6 @@ func (ctx *Context) AddYesNoHandler(
 ) {
 	// lock the map
 	ctx.Router.reactionMu.Lock()
-	defer ctx.Router.reactionMu.Unlock()
 
 	// react with the correct emojis
 	ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("✅"))
@@ -70,4 +71,6 @@ func (ctx *Context) AddYesNoHandler(
 		deleteOnTrigger: false,
 		deleteReaction:  false,
 	}
+
+	ctx.Router.reactionMu.Unlock()
 }

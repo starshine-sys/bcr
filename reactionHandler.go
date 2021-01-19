@@ -57,22 +57,16 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 
 // ReactionMessageDelete cleans up old handlers on deleted messages
 func (r *Router) ReactionMessageDelete(m *gateway.MessageDeleteEvent) {
-	r.reactionMu.Lock()
-	defer r.reactionMu.Unlock()
-	for k := range r.reactions {
-		if k.messageID == m.ID {
-			delete(r.reactions, k)
-		}
-	}
+	r.DeleteReactions(m.ID)
 }
 
 // DeleteReactions deletes all reactions for a message
 func (r *Router) DeleteReactions(m discord.MessageID) {
 	r.reactionMu.Lock()
-	defer r.reactionMu.Unlock()
 	for k := range r.reactions {
 		if k.messageID == m {
 			delete(r.reactions, k)
 		}
 	}
+	r.reactionMu.Unlock()
 }
