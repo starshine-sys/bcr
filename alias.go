@@ -14,7 +14,7 @@ var (
 	ErrNilCommand = errors.New("alias: command was nil")
 )
 
-// ArgTransformer is used in Alias. $args is replaced with the context's RawArgs.
+// ArgTransformer is used in Alias, passing in the context's RawArgs, which are then split again.
 type ArgTransformer func(string) string
 
 // Alias creates an alias to the command `path`, and transforms the arguments according to argTransform.
@@ -46,6 +46,7 @@ func (r *Router) Alias(name string, path []string, argTransform ArgTransformer) 
 
 		Blacklistable:     c.Blacklistable,
 		CustomPermissions: c.CustomPermissions,
+		Permissions:       c.Permissions,
 
 		subCmds: c.subCmds,
 
