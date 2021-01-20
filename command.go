@@ -33,6 +33,9 @@ type Command struct {
 	// Usage is appended to the command name in help commands
 	Usage string
 
+	// Hidden commands are not returned from (*Router).Commands()
+	Hidden bool
+
 	CustomPermissions CustomPerms
 
 	subCmds map[string]*Command
