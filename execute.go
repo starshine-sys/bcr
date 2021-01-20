@@ -115,10 +115,19 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	// if the command has a custom permission handler, check it
 	if c.CustomPermissions != nil {
-		s, b := c.CustomPermissions(ctx)
-		// if it returned false, error and return
+		b, err := c.CustomPermissions.Check(ctx)
+		// if it errored, send that error and return
+		if err != nil {
+			_, err = ctx.Send(fmt.Sprintf(":x: An internal error occurred when checking your permissions.\nThe following permission(s) could not be checked:\n> ```%s```", c.CustomPermissions), nil)
+			if err != nil {
+				return err
+			}
+			return errCommandRun
+		}
+
+		// else if it returned false, show that error and return
 		if !b {
-			_, err = ctx.Send(":x: You are not allowed to use this command:\n> "+s, nil)
+			_, err = ctx.Send(fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permission(s):\n> ```%s```", c.CustomPermissions), nil)
 			if err != nil {
 				return err
 			}

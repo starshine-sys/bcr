@@ -9,6 +9,15 @@ import (
 	"github.com/diamondburned/arikawa/v2/discord"
 )
 
+// CustomPerms is a custom permission checker
+type CustomPerms interface {
+	// The string used for the permissions if the check fails
+	String() string
+
+	// Returns true if the user has permission to run the command
+	Check(*Context) (bool, error)
+}
+
 // Command is a single command, or a group
 type Command struct {
 	Name    string
@@ -24,7 +33,7 @@ type Command struct {
 	// Usage is appended to the command name in help commands
 	Usage string
 
-	CustomPermissions func(*Context) (string, bool)
+	CustomPermissions CustomPerms
 
 	subCmds map[string]*Command
 	subMu   sync.RWMutex
