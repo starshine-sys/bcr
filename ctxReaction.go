@@ -1,6 +1,10 @@
 package bcr
 
-import "github.com/diamondburned/arikawa/v2/discord"
+import (
+	"time"
+
+	"github.com/diamondburned/arikawa/v2/discord"
+)
 
 // AddReactionHandler adds a reaction handler for the given message
 func (ctx *Context) AddReactionHandler(
@@ -24,6 +28,11 @@ func (ctx *Context) AddReactionHandler(
 	}
 
 	ctx.Router.reactionMu.Unlock()
+
+	// delete handlers after 15 minutes to stop them from building up
+	time.AfterFunc(15*time.Minute, func() {
+		ctx.Router.DeleteReactions(msg)
+	})
 }
 
 // AddYesNoHandler adds a reaction handler for the given message
@@ -73,4 +82,9 @@ func (ctx *Context) AddYesNoHandler(
 	}
 
 	ctx.Router.reactionMu.Unlock()
+
+	// delete handlers after 15 minutes to stop them from building up
+	time.AfterFunc(15*time.Minute, func() {
+		ctx.Router.DeleteReactions(msg.ID)
+	})
 }
