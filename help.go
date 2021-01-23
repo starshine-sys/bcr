@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Starshine113/snowflake"
 	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/starshine-sys/snowflake"
 )
 
 func (ctx *Context) tryHelp() error {
