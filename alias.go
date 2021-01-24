@@ -19,7 +19,7 @@ type ArgTransformer func(string) string
 
 // Alias creates an alias to the command `path`, and transforms the arguments according to argTransform.
 // argTransform is called with the context's RawArgs.
-func (r *Router) Alias(name string, path []string, argTransform ArgTransformer) (*Command, error) {
+func (r *Router) Alias(name string, aliases, path []string, argTransform ArgTransformer) (*Command, error) {
 	if len(path) == 0 {
 		return nil, errors.New("no path supplied")
 	}
@@ -38,7 +38,8 @@ func (r *Router) Alias(name string, path []string, argTransform ArgTransformer) 
 	}
 
 	cmd := Command{
-		Name: name,
+		Name:    name,
+		Aliases: aliases,
 
 		Summary:     fmt.Sprintf("Alias to `%v`:\n%v", strings.Join(path, " "), c.Summary),
 		Description: c.Description,
@@ -70,8 +71,8 @@ func (r *Router) Alias(name string, path []string, argTransform ArgTransformer) 
 }
 
 // AliasMust is a wrapper around Alias that panics if err is non-nil
-func (r *Router) AliasMust(name string, path []string, argTransform ArgTransformer) *Command {
-	a, err := r.Alias(name, path, argTransform)
+func (r *Router) AliasMust(name string, aliases, path []string, argTransform ArgTransformer) *Command {
+	a, err := r.Alias(name, aliases, path, argTransform)
 	if err != nil {
 		panic(err)
 	}
