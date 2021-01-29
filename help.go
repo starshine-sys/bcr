@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/diamondburned/arikawa/v2/discord"
-	"github.com/starshine-sys/snowflake"
+	"github.com/starshine-sys/snowflake/v2"
 )
 
 func (ctx *Context) tryHelp() error {

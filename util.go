@@ -3,7 +3,7 @@ package bcr
 import (
 	"time"
 
-	"github.com/starshine-sys/snowflake"
+	"github.com/starshine-sys/snowflake/v2"
 )
 
 var sGen = snowflake.NewGen(time.Date(2020, 01, 01, 0, 0, 0, 0, time.UTC))

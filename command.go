@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/diamondburned/arikawa/v2/discord"
-	"github.com/starshine-sys/snowflake"
+	"github.com/starshine-sys/snowflake/v2"
 )
 
 // CustomPerms is a custom permission checker

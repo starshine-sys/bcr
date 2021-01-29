@@ -1,7 +1,7 @@
 package bcr
 
 import (
-	"github.com/starshine-sys/snowflake"
+	"github.com/starshine-sys/snowflake/v2"
 )
 
 // Commands returns a list of commands
