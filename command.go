@@ -36,6 +36,8 @@ type Command struct {
 	// Hidden commands are not returned from (*Router).Commands()
 	Hidden bool
 
+	Args *Args
+
 	CustomPermissions CustomPerms
 
 	subCmds map[string]*Command
@@ -87,4 +89,29 @@ func (c *Command) GetCommand(name string) *Command {
 		return v
 	}
 	return nil
+}
+
+// Args is a minimum/maximum argument count.
+// If either is -1, it's treated as "no minimum" or "no maximum".
+// This replaces the Check* functions in Context.
+type Args [2]int
+
+// MinArgs returns an *Args with only a minimum number of arguments.
+func MinArgs(i int) *Args {
+	return &Args{i, -1}
+}
+
+// MaxArgs returns an *Args with only a maximum number of arguments.
+func MaxArgs(i int) *Args {
+	return &Args{-1, i}
+}
+
+// ArgRange returns an *Args with both a minimum and maximum number of arguments.
+func ArgRange(i, j int) *Args {
+	return &Args{i, j}
+}
+
+// ExactArgs returns an *Args with an exact number of required arguments.
+func ExactArgs(i int) *Args {
+	return &Args{i, i}
 }

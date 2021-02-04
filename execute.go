@@ -144,6 +144,12 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		return errCommandRun
 	}
 
+	// check arguments
+	err = ctx.argCheck()
+	if err != nil {
+		return err
+	}
+
 	// execute the command
 	err = c.Command(ctx)
 	if err != nil {
