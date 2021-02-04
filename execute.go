@@ -48,7 +48,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 			oldArgs = ctx.Args
 		)
 		// shift all arguments over by 1
-		ctx.Command = ctx.Args[0]
+		ctx.Command = strings.ToLower(ctx.Args[0])
 		if len(ctx.Args) > 0 {
 			ctx.Args = ctx.Args[1:]
 			ctx.RawArgs = TrimPrefixesSpace(ctx.RawArgs, ctx.Command)
