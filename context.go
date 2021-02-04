@@ -13,6 +13,8 @@ import (
 var (
 	ErrChannel   = errors.New("context: couldn't get channel")
 	ErrNoBotUser = errors.New("context: couldn't get bot user")
+
+	ErrEmptyMessage = errors.New("context: message was empty")
 )
 
 // Context is a command context
@@ -49,6 +51,9 @@ func (r *Router) NewContext(m discord.Message) (ctx *Context, err error) {
 	message, err := shellwords.Parse(messageContent)
 	if err != nil {
 		message = strings.Split(messageContent, " ")
+	}
+	if len(message) == 0 {
+		return nil, ErrEmptyMessage
 	}
 	command := strings.ToLower(message[0])
 	args := []string{}
