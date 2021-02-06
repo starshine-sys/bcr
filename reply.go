@@ -15,7 +15,7 @@ var (
 
 // Send sends a message to the context channel
 func (ctx *Context) Send(content string, embed *discord.Embed) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(embed != nil) {
+	if !ctx.checkBotSendPerms(ctx.Channel.ID, embed != nil) {
 		return nil, ErrBotMissingPermissions
 	}
 
@@ -28,7 +28,7 @@ func (ctx *Context) Send(content string, embed *discord.Embed) (m *discord.Messa
 
 // Sendf sends a message with Printf-like syntax
 func (ctx *Context) Sendf(template string, args ...interface{}) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(false) {
+	if !ctx.checkBotSendPerms(ctx.Channel.ID, false) {
 		return nil, ErrBotMissingPermissions
 	}
 
@@ -37,7 +37,7 @@ func (ctx *Context) Sendf(template string, args ...interface{}) (m *discord.Mess
 
 // Reply *replies* to the original message in the context channel
 func (ctx *Context) Reply(content string, embed *discord.Embed) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(embed != nil) {
+	if !ctx.checkBotSendPerms(ctx.Channel.ID, embed != nil) {
 		return nil, ErrBotMissingPermissions
 	}
 
