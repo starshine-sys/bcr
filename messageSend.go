@@ -15,18 +15,37 @@ import (
 type MessageSend struct {
 	Data api.SendMessageData
 
-	channel    discord.ChannelID
+	user    discord.UserID
+	channel discord.ChannelID
+
 	checkPerms bool
 	ctx        *Context
 }
 
-// NewMessage creates a new MessageSend object
-func (ctx *Context) NewMessage() *MessageSend {
+// NewMessage creates a new MessageSend object.
+// Only the *first* channel argument is used, if omitted it's set to the current channel.
+func (ctx *Context) NewMessage(channel ...discord.ChannelID) *MessageSend {
+	ch := ctx.Channel.ID
+	if len(channel) > 0 {
+		ch = channel[0]
+	}
+
 	return &MessageSend{
 		Data:       api.SendMessageData{},
 		ctx:        ctx,
 		checkPerms: true,
-		channel:    ctx.Channel.ID,
+		channel:    ch,
+	}
+}
+
+// NewDM creates a new MessageSend object for the given user.
+// If the user has closed DMs, this will not error until the Send() call.
+func (ctx *Context) NewDM(user discord.UserID) *MessageSend {
+	return &MessageSend{
+		Data:       api.SendMessageData{},
+		ctx:        ctx,
+		checkPerms: false,
+		user:       user,
 	}
 }
 
@@ -89,6 +108,15 @@ func (m *MessageSend) Reference(id discord.MessageID) *MessageSend {
 
 // Send sends the message
 func (m *MessageSend) Send() (msg *discord.Message, err error) {
+	// if it's a user, send a DM
+	if m.user != 0 {
+		return m.sendDM()
+	}
+	// otherwise send the message normally
+	return m.send()
+}
+
+func (m *MessageSend) send() (msg *discord.Message, err error) {
 	if m.checkPerms {
 		if !m.ctx.checkBotSendPerms(m.channel, m.Data.Embed != nil) {
 			return nil, ErrBotMissingPermissions
@@ -96,4 +124,13 @@ func (m *MessageSend) Send() (msg *discord.Message, err error) {
 	}
 
 	return m.ctx.Session.SendMessageComplex(m.channel, m.Data)
+}
+
+func (m *MessageSend) sendDM() (msg *discord.Message, err error) {
+	ch, err := m.ctx.Session.CreatePrivateChannel(m.user)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.ctx.Session.SendMessageComplex(ch.ID, m.Data)
 }
