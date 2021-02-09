@@ -1,8 +1,11 @@
 package bcr
 
 import (
+	"io"
+
 	"github.com/diamondburned/arikawa/v2/api"
 	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v2/utils/sendpart"
 )
 
 // MessageSend is a helper struct for sending messages.
@@ -39,9 +42,18 @@ func (m *MessageSend) Content(c string) *MessageSend {
 	return m
 }
 
-// Embed sends the message embed
+// Embed sets the message embed
 func (m *MessageSend) Embed(e *discord.Embed) *MessageSend {
 	m.Data.Embed = e
+	return m
+}
+
+// AddFile adds a file to the message
+func (m *MessageSend) AddFile(name string, reader io.Reader) *MessageSend {
+	m.Data.Files = append(m.Data.Files, sendpart.File{
+		Name:   name,
+		Reader: reader,
+	})
 	return m
 }
 
