@@ -23,7 +23,7 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 	ctx.AdditionalParams["embeds"] = embeds
 
 	// send the first embed
-	msg, err = ctx.Session.SendEmbed(ctx.Channel.ID, embeds[0])
+	msg, err = ctx.Send("", &embeds[0])
 	if err != nil {
 		return
 	}
