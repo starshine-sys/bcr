@@ -56,11 +56,13 @@ func (r *Router) Alias(name string, aliases, path []string, argTransform ArgTran
 		Cooldown:  c.Cooldown,
 
 		Command: func(ctx *Context) (err error) {
-			ctx.RawArgs = argTransform(ctx.RawArgs)
+			if argTransform != nil {
+				ctx.RawArgs = argTransform(ctx.RawArgs)
 
-			ctx.Args, err = shellwords.Parse(ctx.RawArgs)
-			if err != nil {
-				ctx.Args = strings.Split(ctx.RawArgs, " ")
+				ctx.Args, err = shellwords.Parse(ctx.RawArgs)
+				if err != nil {
+					ctx.Args = strings.Split(ctx.RawArgs, " ")
+				}
 			}
 
 			return c.Command(ctx)
