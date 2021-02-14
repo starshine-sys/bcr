@@ -25,6 +25,9 @@ type Context struct {
 	Args    []string
 	RawArgs string
 
+	internalArgs []string
+	pos          int
+
 	Session *state.State
 	Bot     *discord.User
 
@@ -66,6 +69,7 @@ func (r *Router) NewContext(m discord.Message) (ctx *Context, err error) {
 	// create the context
 	ctx = &Context{
 		Command:          command,
+		internalArgs:     args,
 		Args:             args,
 		Message:          m,
 		Author:           m.Author,

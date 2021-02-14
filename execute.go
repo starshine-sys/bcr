@@ -41,31 +41,14 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	// if the command has subcommands, try those
 	if c.subCmds != nil && len(ctx.Args) > 0 {
-		// need to do this in case there's no subcommand run
-		var (
-			oldCmd  = ctx.Command
-			oldRaw  = ctx.RawArgs
-			oldArgs = ctx.Args
-		)
-		// shift all arguments over by 1
-		ctx.Command = strings.ToLower(ctx.Args[0])
-		if len(ctx.Args) > 0 {
-			ctx.Args = ctx.Args[1:]
-			ctx.RawArgs = TrimPrefixesSpace(ctx.RawArgs, ctx.Command)
-		} else {
-			ctx.Args = []string{}
-			ctx.RawArgs = ""
+		if _, ok = c.subCmds[ctx.Peek()]; ok {
+			ctx.Command = ctx.Pop()
+			err = r.execInner(ctx, c.subCmds, &c.subMu)
+			// return all errors, including errCommandRun, so further layers stop executing as well
+			if err != nil {
+				return err
+			}
 		}
-		err = r.execInner(ctx, c.subCmds, &c.subMu)
-		// return all errors, including errCommandRun, so further layers stop executing as well
-		if err != nil {
-			return err
-		}
-
-		// no sub command was run so shift the args back
-		ctx.Command = oldCmd
-		ctx.RawArgs = oldRaw
-		ctx.Args = oldArgs
 	}
 
 	// set the context's Cmd field to the command
