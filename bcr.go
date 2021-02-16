@@ -42,8 +42,8 @@ type Router struct {
 	messageMu  sync.RWMutex
 }
 
-// NewRouter creates a new router object
-func NewRouter(s *state.State, owners, prefixes []string) *Router {
+// New creates a new router object
+func New(s *state.State, owners, prefixes []string) *Router {
 	r := &Router{
 		Session:    s,
 		BotOwners:  owners,
@@ -70,13 +70,23 @@ func NewRouter(s *state.State, owners, prefixes []string) *Router {
 
 // NewWithState creates a new router with a state.
 // The token is automatically prefixed with `Bot `.
-func NewWithState(token string, owners, prefixes []string) (*Router, error) {
-	s, err := state.NewWithIntents("Bot "+token, RequiredIntents)
+func NewWithState(token string, owners []discord.UserID, prefixes []string) (*Router, error) {
+	return NewWithIntents(token, owners, prefixes, RequiredIntents)
+}
+
+// NewWithIntents creates a new router with a state, with the specified intents.
+// The token is automatically prefixed with `Bot `.
+func NewWithIntents(token string, owners []discord.UserID, prefixes []string, intents gateway.Intents) (*Router, error) {
+	ownerStrings := make([]string, 0)
+	for _, o := range owners {
+		ownerStrings = append(ownerStrings, o.String())
+	}
+	s, err := state.NewWithIntents("Bot "+token, intents)
 	if err != nil {
 		return nil, err
 	}
 
-	r := NewRouter(s, owners, prefixes)
+	r := New(s, ownerStrings, prefixes)
 	return r, nil
 }
 
