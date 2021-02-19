@@ -68,6 +68,8 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 		if page == 0 {
+			ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
+			ctx.AdditionalParams["page"] = len(embeds) - 1
 			return
 		}
 		ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page-1])
@@ -79,6 +81,8 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 		if page >= len(embeds)-1 {
+			ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
+			ctx.AdditionalParams["page"] = 0
 			return
 		}
 		ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page+1])
