@@ -24,7 +24,7 @@ func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
 	}
 
 	// if the message does not start with any of the bot's prefixes (including mentions), return
-	if !r.MatchPrefix(m.Content) {
+	if !r.MatchPrefix(m.Message) {
 		return
 	}
 

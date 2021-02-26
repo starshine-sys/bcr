@@ -17,6 +17,19 @@ var (
 	ErrEmptyMessage = errors.New("context: message was empty")
 )
 
+// Prefixer returns the prefix used and the length. If the message doesn't start with a valid prefix, it returns -1.
+// Note that this function should still use the built-in r.Prefixes for mention prefixes
+type Prefixer func(m discord.Message) int
+
+func (r *Router) DefaultPrefixer(m discord.Message) int {
+	for _, p := range r.Prefixes {
+		if strings.HasPrefix(strings.ToLower(m.Content), p) {
+			return len(p)
+		}
+	}
+	return -1
+}
+
 // Context is a command context
 type Context struct {
 	Command         string
@@ -44,10 +57,10 @@ type Context struct {
 // NewContext returns a new message context
 func (r *Router) NewContext(m discord.Message) (ctx *Context, err error) {
 	messageContent := m.Content
-	for _, prefix := range r.Prefixes {
-		if strings.HasPrefix(strings.ToLower(messageContent), prefix) {
-			messageContent = messageContent[len(prefix):]
-		}
+	if p := r.Prefixer(m); p != -1 {
+		messageContent = messageContent[p:]
+	} else {
+		return nil, ErrEmptyMessage
 	}
 	messageContent = strings.TrimSpace(messageContent)
 
