@@ -21,7 +21,9 @@ const RequiredIntents = gateway.IntentGuildMessages | gateway.IntentGuildMessage
 // Router is the command router
 type Router struct {
 	BotOwners []string
-	Prefixes  []string
+
+	Prefixes []string
+	Prefixer Prefixer
 
 	Session *state.State
 	Bot     *discord.User
@@ -59,6 +61,9 @@ func New(s *state.State, owners, prefixes []string) *Router {
 		messages:  make(map[messageKey]messageInfo),
 		cooldowns: newCooldownCache(),
 	}
+
+	// set prefixer
+	r.Prefixer = r.DefaultPrefixer
 
 	// add required handlers
 	r.Session.AddHandler(r.ReactionAdd)
