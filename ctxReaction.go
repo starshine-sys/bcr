@@ -1,7 +1,10 @@
 package bcr
 
 import (
+	"context"
 	"time"
+
+	"github.com/diamondburned/arikawa/v2/gateway"
 
 	"github.com/diamondburned/arikawa/v2/discord"
 )
@@ -35,56 +38,34 @@ func (ctx *Context) AddReactionHandler(
 	})
 }
 
-// AddYesNoHandler adds a reaction handler for the given message
-func (ctx *Context) AddYesNoHandler(
-	msg discord.Message,
-	user discord.UserID,
-	yesFn func(*Context),
-	noFn func(*Context),
-) {
-	// lock the map
-	ctx.Router.reactionMu.Lock()
+// YesNoHandler adds a reaction handler for the given message.
+// This handler times out after one minute. If it timed out, `false` and `true` are returned, respectively.
+func (ctx *Context) YesNoHandler(msg discord.Message, user discord.UserID) (yes, timeout bool) {
+	c, cancel := context.WithTimeout(context.Background(), time.Minute)
 
-	// react with the correct emojis
-	ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("✅"))
-	ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("❌"))
+	go func() {
+		// react with the correct emojis
+		// this is run in a goroutine to add the handler immediately
+		ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("✅"))
+		ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("❌"))
+	}()
 
-	// yes handler
-	ctx.Router.reactions[reactionKey{
-		messageID: msg.ID,
-		emoji:     discord.APIEmoji("✅"),
-	}] = reactionInfo{
-		userID: user,
-		ctx:    ctx,
-		fn: func(ctx *Context) {
-			yesFn(ctx)
-
-			ctx.Router.DeleteReactions(msg.ID)
-		},
-		deleteOnTrigger: false,
-		deleteReaction:  false,
-	}
-
-	// no handler
-	ctx.Router.reactions[reactionKey{
-		messageID: msg.ID,
-		emoji:     discord.APIEmoji("❌"),
-	}] = reactionInfo{
-		userID: user,
-		ctx:    ctx,
-		fn: func(ctx *Context) {
-			noFn(ctx)
-
-			ctx.Router.DeleteReactions(msg.ID)
-		},
-		deleteOnTrigger: false,
-		deleteReaction:  false,
-	}
-
-	ctx.Router.reactionMu.Unlock()
-
-	// delete handlers after 15 minutes to stop them from building up
-	time.AfterFunc(15*time.Minute, func() {
-		ctx.Router.DeleteReactions(msg.ID)
+	defer cancel()
+	ev := ctx.Session.WaitFor(c, func(ev interface{}) bool {
+		v, ok := ev.(*gateway.MessageReactionAddEvent)
+		if !ok {
+			return false
+		}
+		return v.ChannelID == msg.ChannelID && v.MessageID == msg.ID && v.UserID == user &&
+			(v.Emoji.APIString() == "✅" || v.Emoji.APIString() == "❌")
 	})
+
+	if ev == nil {
+		return false, true
+	}
+	v, ok := ev.(*gateway.MessageReactionAddEvent)
+	if !ok {
+		return false, false
+	}
+	return v.Emoji.APIString() == "✅", false
 }
