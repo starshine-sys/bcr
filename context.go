@@ -2,7 +2,6 @@ package bcr
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v2/bot/extras/shellwords"
@@ -93,8 +92,6 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 
 	raw := TrimPrefixesSpace(messageContent, message[0])
 
-	fmt.Println(p)
-
 	// create the context
 	ctx = &Context{
 		Command: command,
@@ -120,4 +117,15 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 	ctx.Channel = channel
 
 	return ctx, err
+}
+
+// DisplayName returns the context user's displayed name (either username without discriminator, or nickname)
+func (ctx *Context) DisplayName() string {
+	if ctx.Member == nil {
+		return ctx.Author.Username
+	}
+	if ctx.Member.Nick == "" {
+		return ctx.Author.Username
+	}
+	return ctx.Member.Nick
 }
