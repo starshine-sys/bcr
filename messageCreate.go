@@ -29,7 +29,7 @@ func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
 	}
 
 	// get the context
-	ctx, err := r.NewContext(m.Message)
+	ctx, err := r.NewContext(m)
 	if err != nil {
 		log.Println("Error getting context:", err)
 		return

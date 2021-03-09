@@ -20,7 +20,7 @@ func (ctx *Context) tryHelp() error {
 	}
 
 	// execute the help command
-	err := ctx.Help(ctx.fullCommandPath)
+	err := ctx.Help(ctx.FullCommandPath)
 	if err != nil {
 		return err
 	}

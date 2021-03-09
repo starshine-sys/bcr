@@ -31,8 +31,8 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 	}
 	mu.RUnlock()
 
-	// append the current command to fullCommandPath, for help strings
-	ctx.fullCommandPath = append(ctx.fullCommandPath, ctx.Command)
+	// append the current command to FullCommandPath, for help strings
+	ctx.FullCommandPath = append(ctx.FullCommandPath, ctx.Command)
 	// check if the second argument is `help` or `usage`, if so, show the command's help
 	err = ctx.tryHelp()
 	if err != nil {
@@ -119,7 +119,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 	}
 
 	// check for a cooldown
-	if r.cooldowns.Get(strings.Join(ctx.fullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID) {
+	if r.cooldowns.Get(strings.Join(ctx.FullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID) {
 		_, err = ctx.Send(fmt.Sprintf(":x: This command can only be run once every %v.", c.Cooldown), nil)
 		if err != nil {
 			return err
@@ -140,7 +140,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 	}
 	// if there's a cooldown, set it
 	if c.Cooldown != 0 {
-		r.cooldowns.Set(strings.Join(ctx.fullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID, c.Cooldown)
+		r.cooldowns.Set(strings.Join(ctx.FullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID, c.Cooldown)
 	}
 
 	// return with errCommandRun, which indicates to an outer layer (if any) that it should stop execution

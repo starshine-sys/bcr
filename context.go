@@ -2,10 +2,12 @@ package bcr
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v2/bot/extras/shellwords"
 	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v2/gateway"
 	"github.com/diamondburned/arikawa/v2/state"
 )
 
@@ -21,6 +23,7 @@ var (
 // Note that this function should still use the built-in r.Prefixes for mention prefixes
 type Prefixer func(m discord.Message) int
 
+// DefaultPrefixer ...
 func (r *Router) DefaultPrefixer(m discord.Message) int {
 	for _, p := range r.Prefixes {
 		if strings.HasPrefix(strings.ToLower(m.Content), p) {
@@ -32,8 +35,12 @@ func (r *Router) DefaultPrefixer(m discord.Message) int {
 
 // Context is a command context
 type Context struct {
-	Command         string
-	fullCommandPath []string
+	// Command and Prefix contain the invoked command's name and prefix, respectively.
+	// Note that Command won't be accurate if the invoked command was a subcommand, use FullCommandPath for that.
+	Command string
+	Prefix  string
+
+	FullCommandPath []string
 
 	Args    []string
 	RawArgs string
@@ -44,10 +51,15 @@ type Context struct {
 	Session *state.State
 	Bot     *discord.User
 
+	// Info about the message
 	Message discord.Message
 	Channel *discord.Channel
 	Author  discord.User
 
+	// Note: Member is nil for non-guild messages
+	Member *discord.Member
+
+	// The command and the router used
 	Cmd    *Command
 	Router *Router
 
@@ -55,9 +67,11 @@ type Context struct {
 }
 
 // NewContext returns a new message context
-func (r *Router) NewContext(m discord.Message) (ctx *Context, err error) {
+func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err error) {
 	messageContent := m.Content
-	if p := r.Prefixer(m); p != -1 {
+
+	var p int
+	if p = r.Prefixer(m.Message); p != -1 {
 		messageContent = messageContent[p:]
 	} else {
 		return nil, ErrEmptyMessage
@@ -79,13 +93,18 @@ func (r *Router) NewContext(m discord.Message) (ctx *Context, err error) {
 
 	raw := TrimPrefixesSpace(messageContent, message[0])
 
+	fmt.Println(p)
+
 	// create the context
 	ctx = &Context{
-		Command:          command,
+		Command: command,
+		Prefix:  m.Content[:p],
+
 		internalArgs:     args,
 		Args:             args,
-		Message:          m,
+		Message:          m.Message,
 		Author:           m.Author,
+		Member:           m.Member,
 		RawArgs:          raw,
 		Router:           r,
 		Session:          r.Session,

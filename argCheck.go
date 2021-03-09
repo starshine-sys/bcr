@@ -54,7 +54,7 @@ func (ctx *Context) argCheck() (err error) {
 			":x: You didn't give enough arguments: this command requires %v arguments, but you gave %v.\n> **Usage:**\n> ```%v%v %v```",
 			ctx.Cmd.Args[0],
 			len(ctx.Args),
-			ctx.Router.Prefixes[0], strings.Join(ctx.fullCommandPath, " "), ctx.Cmd.Usage,
+			ctx.Router.Prefixes[0], strings.Join(ctx.FullCommandPath, " "), ctx.Cmd.Usage,
 		)
 		if err != nil {
 			return err
@@ -69,7 +69,7 @@ func (ctx *Context) argCheck() (err error) {
 			":x: You gave too many arguments: this command requires at most %v arguments, but you gave %v.\n> **Usage:**\n> ```%v%v %v```",
 			ctx.Cmd.Args[1],
 			len(ctx.Args),
-			ctx.Router.Prefixes[0], strings.Join(ctx.fullCommandPath, " "), ctx.Cmd.Usage,
+			ctx.Router.Prefixes[0], strings.Join(ctx.FullCommandPath, " "), ctx.Cmd.Usage,
 		)
 		if err != nil {
 			return err
@@ -84,21 +84,21 @@ func (ctx *Context) argCheck() (err error) {
 				":x: This command requires exactly %v arguments, but you gave %v.\n> **Usage:**\n> ```%v%v %v```",
 				ctx.Cmd.Args[0],
 				len(ctx.Args),
-				ctx.Router.Prefixes[0], strings.Join(ctx.fullCommandPath, " "), ctx.Cmd.Usage,
+				ctx.Router.Prefixes[0], strings.Join(ctx.FullCommandPath, " "), ctx.Cmd.Usage,
 			)
 		} else if len(ctx.Args) < ctx.Cmd.Args[0] {
 			_, err = ctx.Sendf(
 				":x: You didn't give enough arguments: this command requires %v arguments, but you gave %v.\n> **Usage:**\n> ```%v%v %v```",
 				ctx.Cmd.Args[0],
 				len(ctx.Args),
-				ctx.Router.Prefixes[0], strings.Join(ctx.fullCommandPath, " "), ctx.Cmd.Usage,
+				ctx.Router.Prefixes[0], strings.Join(ctx.FullCommandPath, " "), ctx.Cmd.Usage,
 			)
 		} else if len(ctx.Args) > ctx.Cmd.Args[1] {
 			_, err = ctx.Sendf(
 				":x: You gave too many arguments: this command requires at most %v arguments, but you gave %v.\n> **Usage:**\n> ```%v%v %v```",
 				ctx.Cmd.Args[1],
 				len(ctx.Args),
-				ctx.Router.Prefixes[0], strings.Join(ctx.fullCommandPath, " "), ctx.Cmd.Usage,
+				ctx.Router.Prefixes[0], strings.Join(ctx.FullCommandPath, " "), ctx.Cmd.Usage,
 			)
 		}
 		if err != nil {
