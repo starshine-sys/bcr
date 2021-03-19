@@ -3,6 +3,7 @@ package bcr
 import (
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/diamondburned/arikawa/v2/api"
 	"github.com/diamondburned/arikawa/v2/discord"
@@ -33,6 +34,8 @@ type Router struct {
 	DefaultMentions *api.AllowedMentions
 	EmbedColor      discord.Color
 
+	ReactTimeout time.Duration
+
 	cooldowns *CooldownCache
 	cmds      map[string]*Command
 	cmdMu     sync.RWMutex
@@ -55,6 +58,8 @@ func New(s *state.State, owners, prefixes []string) *Router {
 		DefaultMentions: &api.AllowedMentions{
 			Parse: []api.AllowedMentionType{api.AllowUserMention},
 		},
+
+		ReactTimeout: 15 * time.Minute,
 
 		cmds:      make(map[string]*Command),
 		reactions: make(map[reactionKey]reactionInfo),

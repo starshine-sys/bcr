@@ -16,6 +16,9 @@ func (p *PermError) Error() string {
 	return strings.Join(p.s, ", ")
 }
 
+// PermissionUseSlashCommands is the permission bit to use slash commands in a server
+const PermissionUseSlashCommands = 1 << 31
+
 var permNames = map[discord.Permissions]string{
 	discord.PermissionCreateInstantInvite: "Create Instant Invite",
 	discord.PermissionKickMembers:         "Kick Members",
@@ -47,6 +50,8 @@ var permNames = map[discord.Permissions]string{
 	discord.PermissionManageRoles:         "Manage Roles",
 	discord.PermissionManageWebhooks:      "Manage Webhooks",
 	discord.PermissionManageEmojis:        "Manage Emojis",
+	// This one isn't in arikawa or the developer docs yet, but *has* rolled out to roles
+	1 << 31: "Use Slash Commands",
 }
 
 // CheckPerms checks the user's permissions in the current channel
@@ -74,8 +79,13 @@ func (ctx *Context) perms(user discord.UserID, p discord.Permissions) (err error
 
 // PermStrings gets the permission strings for all required permissions
 func PermStrings(p discord.Permissions) []string {
+	return PermStringsFor(permNames, p)
+}
+
+// PermStringsFor is like PermStrings but lets you specify the specific map used
+func PermStringsFor(m map[discord.Permissions]string, p discord.Permissions) []string {
 	var out = make([]string, 0, 32)
-	for perm, name := range permNames {
+	for perm, name := range m {
 		if p&perm == perm {
 			out = append(out, name)
 		}
