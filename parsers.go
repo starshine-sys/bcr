@@ -14,6 +14,9 @@ var (
 	roleMentionRegex    = regexp.MustCompile("<@&(\\d+)>")
 
 	idRegex = regexp.MustCompile("^\\d+$")
+
+	msgIDRegex   = regexp.MustCompile(`(?P<channel_id>[0-9]{15,20})-(?P<message_id>[0-9]{15,20})$`)
+	msgLinkRegex = regexp.MustCompile(`https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/(?:[0-9]{15,20}|@me)/(?P<channel_id>[0-9]{15,20})/(?P<message_id>[0-9]{15,20})/?$`)
 )
 
 // Errors related to parsing
@@ -23,6 +26,7 @@ var (
 	ErrMemberNotFound  = errors.New("member not found")
 	ErrUserNotFound    = errors.New("user not found")
 	ErrRoleNotFound    = errors.New("role not found")
+	ErrMessageNotFound = errors.New("message not found")
 )
 
 // ParseChannel parses a channel mention/id/name
@@ -173,4 +177,31 @@ func (ctx *Context) ParseUser(s string) (u *discord.User, err error) {
 	}
 
 	return nil, ErrUserNotFound
+}
+
+// ParseMessage parses a message link or ID.
+// Either in channelID-messageID format (obtained by shift right-clicking on the "copy ID" button in the desktop client), or the message link obtained with the "copy message link" button.
+// Will error if the bot does not have access to the channel the message is in.
+func (ctx *Context) ParseMessage(s string) (m *discord.Message, err error) {
+	var groups []string
+
+	if msgIDRegex.MatchString(s) {
+		groups = msgIDRegex.FindStringSubmatch(s)
+	} else if msgLinkRegex.MatchString(s) {
+		groups = msgLinkRegex.FindStringSubmatch(s)
+		groups = groups[1:]
+	}
+
+	if len(groups) == 0 {
+		return nil, ErrMessageNotFound
+	}
+
+	channel, _ := discord.ParseSnowflake(groups[1])
+	msgID, _ := discord.ParseSnowflake(groups[2])
+
+	m, err = ctx.Session.Message(discord.ChannelID(channel), discord.MessageID(msgID))
+	if err != nil {
+		return m, ErrMessageNotFound
+	}
+	return
 }
