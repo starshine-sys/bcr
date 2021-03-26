@@ -123,14 +123,14 @@ func (m *MessageSend) send() (msg *discord.Message, err error) {
 		}
 	}
 
-	return m.ctx.Session.SendMessageComplex(m.channel, m.Data)
+	return m.ctx.State.SendMessageComplex(m.channel, m.Data)
 }
 
 func (m *MessageSend) sendDM() (msg *discord.Message, err error) {
-	ch, err := m.ctx.Session.CreatePrivateChannel(m.user)
+	ch, err := m.ctx.State.CreatePrivateChannel(m.user)
 	if err != nil {
 		return nil, err
 	}
 
-	return m.ctx.Session.SendMessageComplex(ch.ID, m.Data)
+	return m.ctx.State.SendMessageComplex(ch.ID, m.Data)
 }

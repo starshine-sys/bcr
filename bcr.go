@@ -26,8 +26,8 @@ type Router struct {
 	Prefixes []string
 	Prefixer Prefixer
 
-	Session *state.State
-	Bot     *discord.User
+	State *state.State
+	Bot   *discord.User
 
 	BlacklistFunc   func(*Context) bool
 	HelpCommand     func(*Context) error
@@ -50,7 +50,7 @@ type Router struct {
 // New creates a new router object
 func New(s *state.State, owners, prefixes []string) *Router {
 	r := &Router{
-		Session:    s,
+		State:      s,
 		BotOwners:  owners,
 		Prefixes:   prefixes,
 		EmbedColor: discord.DefaultEmbedColor,
@@ -71,9 +71,9 @@ func New(s *state.State, owners, prefixes []string) *Router {
 	r.Prefixer = r.DefaultPrefixer
 
 	// add required handlers
-	r.Session.AddHandler(r.ReactionAdd)
-	r.Session.AddHandler(r.ReactionMessageDelete)
-	r.Session.AddHandler(r.MsgHandlerCreate)
+	r.State.AddHandler(r.ReactionAdd)
+	r.State.AddHandler(r.ReactionMessageDelete)
+	r.State.AddHandler(r.MsgHandlerCreate)
 
 	return r
 }

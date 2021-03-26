@@ -8,7 +8,7 @@ import (
 
 // Edit the given message
 func (ctx *Context) Edit(m *discord.Message, c string, embed *discord.Embed) (msg *discord.Message, err error) {
-	return ctx.Session.EditMessageComplex(m.ChannelID, m.ID, api.EditMessageData{
+	return ctx.State.EditMessageComplex(m.ChannelID, m.ID, api.EditMessageData{
 		Content:         option.NewNullableString(c),
 		Embed:           embed,
 		AllowedMentions: ctx.Router.DefaultMentions,

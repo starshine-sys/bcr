@@ -37,7 +37,7 @@ func (ctx *Context) ParseChannel(s string) (c *discord.Channel, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.Channel(discord.ChannelID(sf))
+		return ctx.State.Channel(discord.ChannelID(sf))
 	}
 
 	// check if it's a mention
@@ -50,11 +50,11 @@ func (ctx *Context) ParseChannel(s string) (c *discord.Channel, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.Channel(discord.ChannelID(sf))
+		return ctx.State.Channel(discord.ChannelID(sf))
 	}
 
 	// otherwise, fall back to names
-	channels, err := ctx.Session.Channels(ctx.Message.GuildID)
+	channels, err := ctx.State.Channels(ctx.Message.GuildID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (ctx *Context) ParseMember(s string) (c *discord.Member, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.Member(ctx.Message.GuildID, discord.UserID(sf))
+		return ctx.State.Member(ctx.Message.GuildID, discord.UserID(sf))
 	}
 
 	// check if it's a mention
@@ -88,11 +88,11 @@ func (ctx *Context) ParseMember(s string) (c *discord.Member, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.Member(ctx.Message.GuildID, discord.UserID(sf))
+		return ctx.State.Member(ctx.Message.GuildID, discord.UserID(sf))
 	}
 
 	// otherwise, fall back to names
-	members, err := ctx.Session.Members(ctx.Message.GuildID)
+	members, err := ctx.State.Members(ctx.Message.GuildID)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (ctx *Context) ParseRole(s string) (c *discord.Role, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.Role(ctx.Message.GuildID, discord.RoleID(sf))
+		return ctx.State.Role(ctx.Message.GuildID, discord.RoleID(sf))
 	}
 
 	// check if it's a mention
@@ -137,11 +137,11 @@ func (ctx *Context) ParseRole(s string) (c *discord.Role, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.Role(ctx.Message.GuildID, discord.RoleID(sf))
+		return ctx.State.Role(ctx.Message.GuildID, discord.RoleID(sf))
 	}
 
 	// otherwise, fall back to names
-	roles, err := ctx.Session.Roles(ctx.Message.GuildID)
+	roles, err := ctx.State.Roles(ctx.Message.GuildID)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func (ctx *Context) ParseUser(s string) (u *discord.User, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.User(discord.UserID(sf))
+		return ctx.State.User(discord.UserID(sf))
 	}
 
 	if userMentionRegex.MatchString(s) {
@@ -173,7 +173,7 @@ func (ctx *Context) ParseUser(s string) (u *discord.User, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return ctx.Session.User(discord.UserID(sf))
+		return ctx.State.User(discord.UserID(sf))
 	}
 
 	return nil, ErrUserNotFound
@@ -199,7 +199,7 @@ func (ctx *Context) ParseMessage(s string) (m *discord.Message, err error) {
 	channel, _ := discord.ParseSnowflake(groups[1])
 	msgID, _ := discord.ParseSnowflake(groups[2])
 
-	m, err = ctx.Session.Message(discord.ChannelID(channel), discord.MessageID(msgID))
+	m, err = ctx.State.Message(discord.ChannelID(channel), discord.MessageID(msgID))
 	if err != nil {
 		return m, ErrMessageNotFound
 	}

@@ -47,8 +47,8 @@ type Context struct {
 	internalArgs []string
 	pos          int
 
-	Session *state.State
-	Bot     *discord.User
+	State *state.State
+	Bot   *discord.User
 
 	// Info about the message
 	Message discord.Message
@@ -104,13 +104,13 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 		Member:           m.Member,
 		RawArgs:          raw,
 		Router:           r,
-		Session:          r.Session,
+		State:            r.State,
 		Bot:              r.Bot,
 		AdditionalParams: make(map[string]interface{}),
 	}
 
 	// get the channel
-	channel, err := r.Session.Channel(m.ChannelID)
+	channel, err := r.State.Channel(m.ChannelID)
 	if err != nil {
 		return ctx, ErrChannel
 	}

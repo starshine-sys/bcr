@@ -30,7 +30,7 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 
 	// add :x: handler
 	ctx.AddReactionHandler(msg.ID, ctx.Author.ID, "❌", true, false, func(*Context) {
-		err = ctx.Session.DeleteMessage(ctx.Channel.ID, msg.ID)
+		err = ctx.State.DeleteMessage(ctx.Channel.ID, msg.ID)
 		if err != nil {
 			log.Printf("Error deleting message %v: %v", msg.ID, err)
 		}
@@ -43,21 +43,21 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 
 	// react with all required emoji--afawk there's no more concise way to do this
 	if extendedReactions {
-		if err = ctx.Session.React(ctx.Channel.ID, msg.ID, "❌"); err != nil {
+		if err = ctx.State.React(ctx.Channel.ID, msg.ID, "❌"); err != nil {
 			return
 		}
-		if err = ctx.Session.React(ctx.Channel.ID, msg.ID, "⏪"); err != nil {
+		if err = ctx.State.React(ctx.Channel.ID, msg.ID, "⏪"); err != nil {
 			return
 		}
 	}
-	if err = ctx.Session.React(ctx.Channel.ID, msg.ID, "⬅️"); err != nil {
+	if err = ctx.State.React(ctx.Channel.ID, msg.ID, "⬅️"); err != nil {
 		return
 	}
-	if err = ctx.Session.React(ctx.Channel.ID, msg.ID, "➡️"); err != nil {
+	if err = ctx.State.React(ctx.Channel.ID, msg.ID, "➡️"); err != nil {
 		return
 	}
 	if extendedReactions {
-		if err = ctx.Session.React(ctx.Channel.ID, msg.ID, "⏩"); err != nil {
+		if err = ctx.State.React(ctx.Channel.ID, msg.ID, "⏩"); err != nil {
 			return
 		}
 	}
@@ -68,11 +68,11 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 		if page == 0 {
-			ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
+			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
 			ctx.AdditionalParams["page"] = len(embeds) - 1
 			return
 		}
-		ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page-1])
+		ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page-1])
 		ctx.AdditionalParams["page"] = page - 1
 	})
 
@@ -81,11 +81,11 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 		if page >= len(embeds)-1 {
-			ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
+			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
 			ctx.AdditionalParams["page"] = 0
 			return
 		}
-		ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page+1])
+		ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page+1])
 		ctx.AdditionalParams["page"] = page + 1
 	})
 
@@ -93,14 +93,14 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 		ctx.AddReactionHandler(msg.ID, ctx.Author.ID, "⏪", false, true, func(ctx *Context) {
 			embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
-			ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
+			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
 			ctx.AdditionalParams["page"] = 0
 		})
 
 		ctx.AddReactionHandler(msg.ID, ctx.Author.ID, "⏩", false, true, func(ctx *Context) {
 			embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
-			ctx.Session.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
+			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
 			ctx.AdditionalParams["page"] = len(embeds) - 1
 		})
 	}

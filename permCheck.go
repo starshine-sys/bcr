@@ -65,7 +65,7 @@ func (ctx *Context) CheckBotPerms(p discord.Permissions) (err error) {
 }
 
 func (ctx *Context) perms(user discord.UserID, p discord.Permissions) (err error) {
-	perms, err := ctx.Session.Permissions(ctx.Channel.ID, user)
+	perms, err := ctx.State.Permissions(ctx.Channel.ID, user)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (ctx *Context) checkBotSendPerms(ch discord.ChannelID, e bool) bool {
 		return true
 	}
 
-	perms, err := ctx.Session.Permissions(ch, ctx.Bot.ID)
+	perms, err := ctx.State.Permissions(ch, ctx.Bot.ID)
 	if err != nil {
 		return false
 	}
@@ -129,7 +129,7 @@ func (ctx *Context) checkBotSendPerms(ch discord.ChannelID, e bool) bool {
 	// if the bot requires embed links but doesn't have it, return false
 	if e && !perms.Has(discord.PermissionEmbedLinks) {
 		// but we *can* send an error message (at least probably, we've checked for perms already)
-		ctx.Session.SendMessage(ch, ":x: I do not have permission to send embeds in this channel. Please ensure I have the `Embed Links` permission here.", nil)
+		ctx.State.SendMessage(ch, ":x: I do not have permission to send embeds in this channel. Please ensure I have the `Embed Links` permission here.", nil)
 		return false
 	}
 

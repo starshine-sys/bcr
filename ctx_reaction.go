@@ -53,12 +53,12 @@ func (ctx *Context) YesNoHandlerWithTimeout(msg discord.Message, user discord.Us
 	go func() {
 		// react with the correct emojis
 		// this is run in a goroutine to add the handler immediately
-		ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("✅"))
-		ctx.Session.React(msg.ChannelID, msg.ID, discord.APIEmoji("❌"))
+		ctx.State.React(msg.ChannelID, msg.ID, discord.APIEmoji("✅"))
+		ctx.State.React(msg.ChannelID, msg.ID, discord.APIEmoji("❌"))
 	}()
 
 	defer cancel()
-	ev := ctx.Session.WaitFor(c, func(ev interface{}) bool {
+	ev := ctx.State.WaitFor(c, func(ev interface{}) bool {
 		v, ok := ev.(*gateway.MessageReactionAddEvent)
 		if !ok {
 			return false
@@ -94,7 +94,7 @@ func (ctx *Context) WaitForReactionWithTimeout(msg discord.Message, user discord
 	c, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	v := ctx.Session.WaitFor(c, func(ev interface{}) bool {
+	v := ctx.State.WaitFor(c, func(ev interface{}) bool {
 		v, ok := ev.(*gateway.MessageReactionAddEvent)
 		if !ok {
 			return false

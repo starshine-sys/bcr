@@ -19,7 +19,7 @@ func (ctx *Context) Send(content string, embed *discord.Embed) (m *discord.Messa
 		return nil, ErrBotMissingPermissions
 	}
 
-	return ctx.Session.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
+	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
 		Content:         content,
 		Embed:           embed,
 		AllowedMentions: ctx.Router.DefaultMentions,
@@ -41,7 +41,7 @@ func (ctx *Context) Reply(content string, embed *discord.Embed) (m *discord.Mess
 		return nil, ErrBotMissingPermissions
 	}
 
-	return ctx.Session.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
+	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
 		Content:         content,
 		Embed:           embed,
 		AllowedMentions: ctx.Router.DefaultMentions,

@@ -53,7 +53,7 @@ func (r *Router) mustSetBotUser() {
 
 // SetBotUser sets the router's bot user, returning any errors
 func (r *Router) SetBotUser() error {
-	me, err := r.Session.Me()
+	me, err := r.State.Me()
 	if err != nil {
 		return err
 	}

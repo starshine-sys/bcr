@@ -66,7 +66,19 @@ func (ctx *Context) Help(path []string) (err error) {
 			Value: cmd.Description,
 		})
 	}
-	usageString := strings.Join(path, " ")
+
+	// get full names for path
+	var title []string
+	c := ctx.Router.GetCommand(path[0])
+	title = append(title, c.Name)
+	if len(path) > 1 {
+		for _, p := range path[1:] {
+			c = c.GetCommand(p)
+			title = append(title, c.Name)
+		}
+	}
+
+	usageString := strings.Join(title, " ")
 	if cmd.Usage != "" {
 		usageString += " " + cmd.Usage
 	}
@@ -120,7 +132,7 @@ func (ctx *Context) Help(path []string) (err error) {
 	}
 
 	_, err = ctx.Send("", &discord.Embed{
-		Title:       "`" + strings.ToUpper(strings.Join(path, " ")) + "`",
+		Title:       "`" + strings.ToUpper(strings.Join(title, " ")) + "`",
 		Description: DefaultValue(cmd.Summary, "No summary provided"),
 		Fields:      fields,
 		Color:       ctx.Router.EmbedColor,

@@ -66,7 +66,7 @@ func (bot *Bot) Add(f func(*Bot) (string, []*bcr.Command)) {
 	})
 }
 
-// Start wraps around Router.Session.Open()
+// Start wraps around Router.State.Open()
 func (bot *Bot) Start() error {
-	return bot.Router.Session.Open()
+	return bot.Router.State.Open()
 }
