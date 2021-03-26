@@ -13,7 +13,7 @@ import (
 
 // Version returns the current brc version
 func Version() string {
-	return "0.12.0"
+	return "0.14.1"
 }
 
 // RequiredIntents are the intents required for the command handler
