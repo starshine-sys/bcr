@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/diamondburned/arikawa/v2/gateway"
@@ -59,20 +60,43 @@ func (ctx *Context) YesNoHandlerWithTimeout(msg discord.Message, user discord.Us
 
 	defer cancel()
 	ev := ctx.State.WaitFor(c, func(ev interface{}) bool {
+		// first, try a reaction add event
 		v, ok := ev.(*gateway.MessageReactionAddEvent)
 		if !ok {
-			return false
+			// try a message create event
+			m, ok := ev.(*gateway.MessageCreateEvent)
+			if !ok {
+				return false
+			}
+
+			// return true if
+			// - the channel ID and user ID are correct
+			// - the message is "yes", "y", "no", or "n"
+			return m.ChannelID == msg.ChannelID && m.Author.ID == user &&
+				(strings.ToLower(m.Content) == "yes" || strings.ToLower(m.Content) == "y" || strings.ToLower(m.Content) == "no" || strings.ToLower(m.Content) == "n")
 		}
+
+		// return true if
+		// - the channel ID, message ID, and user ID are correct
+		// - the emoji is the yes or no emoji
 		return v.ChannelID == msg.ChannelID && v.MessageID == msg.ID && v.UserID == user &&
 			(v.Emoji.APIString() == "✅" || v.Emoji.APIString() == "❌")
 	})
 
+	// if the event timed out, return
 	if ev == nil {
 		return false, true
 	}
+
+	// try a message reaction event
 	v, ok := ev.(*gateway.MessageReactionAddEvent)
 	if !ok {
-		return false, false
+		m, ok := ev.(*gateway.MessageCreateEvent)
+		if !ok {
+			return false, false
+		}
+		// if not, it's a message create event
+		return strings.EqualFold(m.Content, "yes") || strings.EqualFold(m.Content, "y"), false
 	}
 	return v.Emoji.APIString() == "✅", false
 }
