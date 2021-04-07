@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/spf13/pflag"
 	"github.com/starshine-sys/snowflake/v2"
 )
 
@@ -39,6 +40,10 @@ type Command struct {
 	Args *Args
 
 	CustomPermissions CustomPerms
+
+	// Flags is used to create a new flag set, which is then parsed before the command is run.
+	// These can then be retrieved with the (*FlagSet).Get*() methods.
+	Flags func(fs *pflag.FlagSet) *pflag.FlagSet
 
 	subCmds map[string]*Command
 	subMu   sync.RWMutex

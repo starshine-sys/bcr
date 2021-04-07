@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/spf13/pflag"
 )
 
 var errCommandRun = errors.New("command run in layer")
@@ -125,6 +127,19 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 			return err
 		}
 		return errCommandRun
+	}
+
+	// if the command has any flags set, parse those
+	if c.Flags != nil {
+		ctx.Flags = c.Flags(pflag.NewFlagSet("", pflag.ContinueOnError))
+		ctx.Flags.ParseErrorsWhitelist.UnknownFlags = true
+
+		err = ctx.Flags.Parse(ctx.Args)
+		if err != nil {
+			_, err = ctx.Send(":x: There was an error parsing your input. Try checking this command's help.", nil)
+			return
+		}
+		ctx.Args = ctx.Flags.Args()
 	}
 
 	// check arguments

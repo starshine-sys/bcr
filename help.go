@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/spf13/pflag"
 	"github.com/starshine-sys/snowflake/v2"
 )
 
@@ -58,6 +59,11 @@ func (ctx *Context) Help(path []string) (err error) {
 		return err
 	}
 
+	var fs *pflag.FlagSet
+	if cmd.Flags != nil {
+		fs = cmd.Flags(pflag.NewFlagSet("", pflag.ContinueOnError))
+	}
+
 	fields := make([]discord.EmbedField, 0)
 
 	if cmd.Description != "" {
@@ -78,20 +84,44 @@ func (ctx *Context) Help(path []string) (err error) {
 		}
 	}
 
-	usageString := strings.Join(title, " ")
-	if cmd.Usage != "" {
-		usageString += " " + cmd.Usage
+	usage := strings.Join(title, " ")
+
+	if fs != nil {
+		usage += " "
+		fs.VisitAll(func(f *pflag.Flag) {
+			usage += fmt.Sprintf("[-%v %v] ", f.Shorthand, f.Value.Type())
+		})
 	}
+
+	if cmd.Usage != "" {
+		usage += " " + cmd.Usage
+	}
+
 	fields = append(fields, discord.EmbedField{
 		Name:  "Usage",
-		Value: "`" + usageString + "`",
+		Value: "`" + strings.TrimSpace(usage) + "`",
 	})
+
+	if fs != nil {
+		var desc string
+
+		fs.VisitAll(func(f *pflag.Flag) {
+			desc += fmt.Sprintf("`-%v, --%v`: %v\n", f.Shorthand, f.Name, f.Usage)
+		})
+
+		fields = append(fields, discord.EmbedField{
+			Name:  "Flags",
+			Value: desc,
+		})
+	}
+
 	if cmd.Permissions != 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Required permissions",
 			Value: fmt.Sprintf("`%v`", strings.Join(PermStrings(cmd.Permissions), ", ")),
 		})
 	}
+
 	if len(cmd.Aliases) != 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Aliases",

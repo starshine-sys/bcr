@@ -8,6 +8,7 @@ import (
 	"github.com/diamondburned/arikawa/v2/discord"
 	"github.com/diamondburned/arikawa/v2/gateway"
 	"github.com/diamondburned/arikawa/v2/state"
+	"github.com/spf13/pflag"
 )
 
 // Errors related to getting the context
@@ -43,6 +44,8 @@ type Context struct {
 
 	Args    []string
 	RawArgs string
+
+	Flags *pflag.FlagSet
 
 	internalArgs []string
 	pos          int
