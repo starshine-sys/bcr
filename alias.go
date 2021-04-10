@@ -45,6 +45,8 @@ func (r *Router) Alias(name string, aliases, path []string, argTransform ArgTran
 		Description: c.Description,
 		Usage:       c.Usage,
 
+		Flags: c.Flags,
+
 		Blacklistable:     c.Blacklistable,
 		CustomPermissions: c.CustomPermissions,
 		Permissions:       c.Permissions,
