@@ -2,7 +2,6 @@ package bcr
 
 import (
 	"errors"
-	"log"
 
 	"github.com/diamondburned/arikawa/v2/discord"
 )
@@ -32,7 +31,7 @@ func (ctx *Context) PagedEmbed(embeds []discord.Embed, extendedReactions bool) (
 	ctx.AddReactionHandler(msg.ID, ctx.Author.ID, "❌", true, false, func(*Context) {
 		err = ctx.State.DeleteMessage(ctx.Channel.ID, msg.ID)
 		if err != nil {
-			log.Printf("Error deleting message %v: %v", msg.ID, err)
+			ctx.Router.Logger.Error("deleting message: %v", err)
 		}
 	})
 

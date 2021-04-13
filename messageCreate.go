@@ -2,7 +2,6 @@ package bcr
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/diamondburned/arikawa/v2/gateway"
 )
@@ -12,6 +11,8 @@ import (
 // - checks if the message matches a prefix
 // - runs commands
 func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
+	r.Logger.Debug("received new message (%v) in %v by %v#%v (%v)", m.ID, m.ChannelID, m.Author.Username, m.Author.Discriminator, m.Author.ID)
+
 	// set the bot user if not done already
 	if r.Bot == nil {
 		r.mustSetBotUser()
@@ -31,13 +32,13 @@ func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
 	// get the context
 	ctx, err := r.NewContext(m)
 	if err != nil {
-		log.Println("Error getting context:", err)
+		ctx.Router.Logger.Error("getting context: %v", err)
 		return
 	}
 
 	err = r.Execute(ctx)
 	if err != nil {
-		log.Println("Error executing commands:", err)
+		ctx.Router.Logger.Error("executing command: %v", err)
 		return
 	}
 }

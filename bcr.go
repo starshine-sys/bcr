@@ -26,8 +26,9 @@ type Router struct {
 	Prefixes []string
 	Prefixer Prefixer
 
-	State *state.State
-	Bot   *discord.User
+	State  *state.State
+	Bot    *discord.User
+	Logger *Logger
 
 	BlacklistFunc   func(*Context) bool
 	HelpCommand     func(*Context) error
@@ -54,6 +55,8 @@ func New(s *state.State, owners, prefixes []string) *Router {
 		BotOwners:  owners,
 		Prefixes:   prefixes,
 		EmbedColor: discord.DefaultEmbedColor,
+
+		Logger: NewStdlibLogger(false),
 
 		DefaultMentions: &api.AllowedMentions{
 			Parse: []api.AllowedMentionType{api.AllowUserMention},

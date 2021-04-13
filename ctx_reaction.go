@@ -3,7 +3,6 @@ package bcr
 import (
 	"context"
 	"errors"
-	"log"
 	"strings"
 	"time"
 
@@ -141,7 +140,7 @@ func (ctx *Context) WaitForReactionWithTimeout(msg discord.Message, user discord
 func (ctx *Context) Confirm(s string) (yes bool) {
 	m, err := ctx.Sendf("Are you sure you want to %v?", s)
 	if err != nil {
-		log.Printf("Error sending message: %v", err)
+		ctx.Router.Logger.Error("sending message: %v", err)
 		return false
 	}
 
@@ -149,7 +148,7 @@ func (ctx *Context) Confirm(s string) (yes bool) {
 	if timeout {
 		_, err = ctx.Send(":x: Operation timed out.", nil)
 		if err != nil {
-			log.Printf("Error sending message: %v", err)
+			ctx.Router.Logger.Error("sending message: %v", err)
 		}
 		return false
 	}
@@ -157,7 +156,7 @@ func (ctx *Context) Confirm(s string) (yes bool) {
 	if !yes {
 		_, err = ctx.Send(":x: Operation cancelled.", nil)
 		if err != nil {
-			log.Printf("Error sending message: %v", err)
+			ctx.Router.Logger.Error("sending message: %v", err)
 		}
 		return false
 	}
