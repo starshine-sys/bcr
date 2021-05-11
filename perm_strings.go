@@ -12,6 +12,7 @@ type Perm struct {
 const (
 	PermissionViewServerInsights = 1 << 19
 	PermissionUseSlashCommands   = 1 << 31
+	PermissionRequestToSpeak     = 1 << 32
 )
 
 // All permissions
