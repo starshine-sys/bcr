@@ -53,6 +53,7 @@ var (
 		{discord.PermissionUseVAD, "Use Voice Activity"},
 		{discord.PermissionSpeak, "Speak"},
 		{discord.PermissionConnect, "Connect"},
+		{PermissionRequestToSpeak, "Request to Speak"},
 
 		{discord.PermissionAttachFiles, "Attach Files"},
 		{discord.PermissionEmbedLinks, "Embed Links"},
