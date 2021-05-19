@@ -47,7 +47,7 @@ type Context struct {
 
 	Flags *pflag.FlagSet
 
-	internalArgs []string
+	InternalArgs []string
 	pos          int
 
 	State *state.State
@@ -100,7 +100,7 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 		Command: command,
 		Prefix:  m.Content[:p],
 
-		internalArgs:     args,
+		InternalArgs:     args,
 		Args:             args,
 		Message:          m.Message,
 		Author:           m.Author,
