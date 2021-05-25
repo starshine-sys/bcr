@@ -11,12 +11,13 @@ import (
 	"github.com/diamondburned/arikawa/v2/discord"
 )
 
-// AddReactionHandler adds a reaction handler for the given message
-func (ctx *Context) AddReactionHandler(
+// AddReactionHandlerWithTimeout is like AddReactionHandler but accepts a timeout
+func (ctx *Context) AddReactionHandlerWithTimeout(
 	msg discord.MessageID,
 	user discord.UserID,
 	reaction string,
 	deleteOnTrigger, deleteReaction bool,
+	timeout time.Duration,
 	fn func(*Context),
 ) {
 	ctx.Router.reactionMu.Lock()
@@ -38,6 +39,18 @@ func (ctx *Context) AddReactionHandler(
 	time.AfterFunc(ctx.Router.ReactTimeout, func() {
 		ctx.Router.DeleteReactions(msg)
 	})
+}
+
+// AddReactionHandler adds a reaction handler for the given message
+func (ctx *Context) AddReactionHandler(
+	msg discord.MessageID,
+	user discord.UserID,
+	reaction string,
+	deleteOnTrigger, deleteReaction bool,
+	fn func(*Context),
+) {
+	ctx.AddReactionHandlerWithTimeout(msg, user, reaction, deleteOnTrigger, deleteReaction, ctx.Router.ReactTimeout, fn)
+	return
 }
 
 // YesNoHandler adds a reaction handler for the given message.
