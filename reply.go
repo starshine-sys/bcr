@@ -28,27 +28,23 @@ func (ctx *Context) Send(content string, embed *discord.Embed) (m *discord.Messa
 
 // Sendf sends a message with Printf-like syntax
 func (ctx *Context) Sendf(template string, args ...interface{}) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(ctx.Channel.ID, false) {
-		return nil, ErrBotMissingPermissions
-	}
-
 	return ctx.Send(fmt.Sprintf(template, args...), nil)
 }
 
-// Reply *replies* to the original message in the context channel
-func (ctx *Context) Reply(content string, embed *discord.Embed) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(ctx.Channel.ID, embed != nil) {
-		return nil, ErrBotMissingPermissions
-	}
+// Reply sends a message with Printf-like syntax, in an embed.
+// Use Replyc to set the embed's colour.
+func (ctx *Context) Reply(template string, args ...interface{}) (m *discord.Message, err error) {
+	return ctx.Send("", &discord.Embed{
+		Description: fmt.Sprintf(template, args...),
+		Color:       ctx.Router.EmbedColor,
+	})
+}
 
-	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
-		Content:         content,
-		Embed:           embed,
-		AllowedMentions: ctx.Router.DefaultMentions,
-
-		Reference: &discord.MessageReference{
-			MessageID: ctx.Message.ID,
-		},
+// Replyc sends a message with Printf-like syntax, in an embed. The first argument is the embed's colour.
+func (ctx *Context) Replyc(colour discord.Color, template string, args ...interface{}) (m *discord.Message, err error) {
+	return ctx.Send("", &discord.Embed{
+		Description: fmt.Sprintf(template, args...),
+		Color:       colour,
 	})
 }
 
@@ -66,10 +62,6 @@ type SED = SendEmbedData
 
 // SendEmbed sends a message, formatted as an embed.
 func (ctx *Context) SendEmbed(data SendEmbedData) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(ctx.Channel.ID, true) {
-		return nil, ErrBotMissingPermissions
-	}
-
 	var (
 		footer *discord.EmbedFooter
 		color  = data.Color
@@ -85,12 +77,10 @@ func (ctx *Context) SendEmbed(data SendEmbedData) (m *discord.Message, err error
 		color = ctx.Router.EmbedColor
 	}
 
-	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
-		Embed: &discord.Embed{
-			Title:       data.Title,
-			Description: data.Message,
-			Footer:      footer,
-			Color:       color,
-		},
+	return ctx.Send("", &discord.Embed{
+		Title:       data.Title,
+		Description: data.Message,
+		Footer:      footer,
+		Color:       color,
 	})
 }
