@@ -54,8 +54,8 @@ func (ctx *Context) checkOwner() bool {
 	return false
 }
 
-// checkBotSendPerms checks if the bot can send messages in a channel
-func (ctx *Context) checkBotSendPerms(ch discord.ChannelID, e bool) bool {
+// CheckBotSendPerms checks if the bot can send messages in a channel
+func (ctx *Context) CheckBotSendPerms(ch discord.ChannelID, e bool) bool {
 	// if this is a DM channel we always have perms
 	if ctx.Channel.ID == ch && ctx.Message.GuildID == 0 {
 		return true

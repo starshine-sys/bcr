@@ -15,10 +15,6 @@ var (
 
 // Send sends a message to the context channel
 func (ctx *Context) Send(content string, embed *discord.Embed) (m *discord.Message, err error) {
-	if !ctx.checkBotSendPerms(ctx.Channel.ID, embed != nil) {
-		return nil, ErrBotMissingPermissions
-	}
-
 	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
 		Content:         content,
 		Embed:           embed,

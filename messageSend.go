@@ -117,12 +117,6 @@ func (m *MessageSend) Send() (msg *discord.Message, err error) {
 }
 
 func (m *MessageSend) send() (msg *discord.Message, err error) {
-	if m.checkPerms {
-		if !m.ctx.checkBotSendPerms(m.channel, m.Data.Embed != nil) {
-			return nil, ErrBotMissingPermissions
-		}
-	}
-
 	return m.ctx.State.SendMessageComplex(m.channel, m.Data)
 }
 
