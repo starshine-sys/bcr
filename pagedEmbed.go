@@ -156,9 +156,45 @@ func FieldPaginator(title, description string, colour discord.Color, fields []di
 		count++
 	}
 
-	if len(buf.Fields) > 0 {
-		embeds = append(embeds, buf)
+	embeds = append(embeds, buf)
+
+	return embeds
+}
+
+// StringPaginator paginates strings, for use in ctx.PagedEmbed
+func StringPaginator(title string, colour discord.Color, slice []string, perPage int) []discord.Embed {
+	var (
+		embeds []discord.Embed
+		count  int
+
+		pages = 1
+		buf   = discord.Embed{
+			Title: title,
+			Color: colour,
+			Footer: &discord.EmbedFooter{
+				Text: fmt.Sprintf("Page 1/%v", math.Ceil(float64(len(slice))/float64(perPage))),
+			},
+		}
+	)
+
+	for _, s := range slice {
+		if count >= perPage {
+			embeds = append(embeds, buf)
+			buf = discord.Embed{
+				Title: title,
+				Color: colour,
+				Footer: &discord.EmbedFooter{
+					Text: fmt.Sprintf("Page %v/%v", pages+1, math.Ceil(float64(len(slice))/float64(perPage))),
+				},
+			}
+			count = 0
+			pages++
+		}
+		buf.Description += s
+		count++
 	}
+
+	embeds = append(embeds, buf)
 
 	return embeds
 }
