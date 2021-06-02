@@ -14,6 +14,7 @@ import (
 // Errors related to getting the context
 var (
 	ErrChannel   = errors.New("context: couldn't get channel")
+	ErrGuild     = errors.New("context: couldn't get guild")
 	ErrNoBotUser = errors.New("context: couldn't get bot user")
 
 	ErrEmptyMessage = errors.New("context: message was empty")
@@ -56,6 +57,7 @@ type Context struct {
 	// Info about the message
 	Message discord.Message
 	Channel *discord.Channel
+	Guild   *discord.Guild
 	Author  discord.User
 
 	// Note: Member is nil for non-guild messages
@@ -113,11 +115,17 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 	}
 
 	// get the channel
-	channel, err := r.State.Channel(m.ChannelID)
+	ctx.Channel, err = r.State.Channel(m.ChannelID)
 	if err != nil {
 		return ctx, ErrChannel
 	}
-	ctx.Channel = channel
+	// get guild
+	if m.GuildID.IsValid() {
+		ctx.Guild, err = r.State.Guild(m.GuildID)
+		if err != nil {
+			return ctx, ErrGuild
+		}
+	}
 
 	return ctx, err
 }
