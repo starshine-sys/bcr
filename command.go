@@ -120,3 +120,61 @@ func ArgRange(i, j int) *Args {
 func ExactArgs(i int) *Args {
 	return &Args{i, i}
 }
+
+type requireRole struct {
+	name string
+
+	// owners override the role check
+	owners []discord.UserID
+	// any of these roles is required for the check to succeed
+	roles []discord.RoleID
+}
+
+var _ CustomPerms = (*requireRole)(nil)
+
+func (r *requireRole) String() string {
+	return r.name
+}
+
+func (r *requireRole) Check(ctx *Context) (bool, error) {
+	for _, u := range r.owners {
+		if u == ctx.Author.ID {
+			return true, nil
+		}
+	}
+
+	if ctx.Member == nil {
+		return false, nil
+	}
+
+	for _, r := range r.roles {
+		for _, mr := range ctx.Member.RoleIDs {
+			if r == mr {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
+// RequireRole returns a CustomPerms that requires the given roles.
+// If any of r's owner IDs are not valid snowflakes, this function will panic!
+func (r *Router) RequireRole(name string, roles ...discord.RoleID) CustomPerms {
+	owners := []discord.UserID{}
+
+	for _, u := range r.BotOwners {
+		id, err := discord.ParseSnowflake(u)
+		if err != nil {
+			panic(err)
+		}
+
+		owners = append(owners, discord.UserID(id))
+	}
+
+	return &requireRole{
+		name:   name,
+		owners: owners,
+		roles:  roles,
+	}
+}

@@ -115,10 +115,19 @@ func (ctx *Context) Help(path []string) (err error) {
 		})
 	}
 
-	if cmd.Permissions != 0 {
+	if cmd.Permissions != 0 || cmd.CustomPermissions != nil {
+		s := []string{}
+		if cmd.Permissions != 0 {
+			s = append(s, strings.Join(PermStrings(cmd.Permissions), ", "))
+		}
+
+		if cmd.CustomPermissions != nil {
+			s = append(s, cmd.CustomPermissions.String())
+		}
+
 		fields = append(fields, discord.EmbedField{
 			Name:  "Required permissions",
-			Value: fmt.Sprintf("`%v`", strings.Join(PermStrings(cmd.Permissions), ", ")),
+			Value: strings.Join(s, "\n"),
 		})
 	}
 
