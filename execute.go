@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/diamondburned/arikawa/v2/discord"
 	"github.com/spf13/pflag"
 )
 
@@ -82,13 +83,29 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		return errCommandRun
 	}
 
-	// if the command requires extra permissions
+	if c.GuildPermissions != 0 {
+		if ctx.Guild == nil || ctx.Member == nil {
+			_, err = ctx.Send(":x: This command cannot be used in DMs.", nil)
+			return errCommandRun
+		}
+		if !ctx.GuildPerms().Has(c.GuildPermissions) {
+			_, err = ctx.Sendf(":x: You are not allowed to use this command. You are missing the following permissions:\n> ```%v```", strings.Join(PermStrings(c.GuildPermissions), ", "))
+			// if there's an error, return it
+			if err != nil {
+				return err
+			}
+			// but if not, return errCommandRun so we don't try running more
+			return errCommandRun
+		}
+	}
+
 	if c.Permissions != 0 {
-		// check command permissions
-		if err = ctx.CheckPerms(); err != nil {
-			_, err = ctx.Send(
-				fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permissions:\n> ```%v```", err), nil,
-			)
+		if ctx.Guild == nil || ctx.Channel == nil || ctx.Member == nil {
+			_, err = ctx.Send(":x: This command cannot be used in DMs.", nil)
+			return errCommandRun
+		}
+		if !discord.CalcOverwrites(*ctx.Guild, *ctx.Channel, *ctx.Member).Has(c.Permissions) {
+			_, err = ctx.Sendf(":x: You are not allowed to use this command. You are missing the following permissions:\n> ```%v```", strings.Join(PermStrings(c.Permissions), ", "))
 			// if there's an error, return it
 			if err != nil {
 				return err

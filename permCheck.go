@@ -1,42 +1,32 @@
 package bcr
 
-import (
-	"strings"
+import "github.com/diamondburned/arikawa/v2/discord"
 
-	"github.com/diamondburned/arikawa/v2/discord"
-)
-
-// PermError is a permission error
-type PermError struct {
-	perms discord.Permissions
-	s     []string
-}
-
-func (p *PermError) Error() string {
-	return strings.Join(p.s, ", ")
-}
-
-// CheckPerms checks the user's permissions in the current channel
-func (ctx *Context) CheckPerms() (err error) {
-	return ctx.perms(ctx.Author.ID, ctx.Cmd.Permissions)
-}
-
-// CheckBotPerms checks the bot's permissions in the current channel
-func (ctx *Context) CheckBotPerms(p discord.Permissions) (err error) {
-	return ctx.perms(ctx.Bot.ID, p)
-}
-
-func (ctx *Context) perms(user discord.UserID, p discord.Permissions) (err error) {
-	perms, err := ctx.State.Permissions(ctx.Channel.ID, user)
-	if err != nil {
-		return err
+// GuildPerms returns the global (guild) permissions of this Context's user.
+// If in DMs, it will return the permissions users have in DMs.
+func (ctx *Context) GuildPerms() (perms discord.Permissions) {
+	if ctx.Guild == nil || ctx.Member == nil {
+		return discord.PermissionViewChannel | discord.PermissionSendMessages | discord.PermissionAddReactions | discord.PermissionReadMessageHistory
 	}
 
-	b := perms.Has(p)
-	if b {
-		return nil
+	if ctx.Guild.OwnerID == ctx.Author.ID {
+		return discord.PermissionAll
 	}
-	return &PermError{s: PermStrings(p), perms: p}
+
+	for _, id := range ctx.Member.RoleIDs {
+		for _, r := range ctx.Guild.Roles {
+			if id == r.ID {
+				if r.Permissions.Has(discord.PermissionAdministrator) {
+					return discord.PermissionAll
+				}
+
+				perms |= r.Permissions
+				break
+			}
+		}
+	}
+
+	return perms
 }
 
 // checkOwner returns true if the user can run the command

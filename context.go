@@ -125,6 +125,10 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 		if err != nil {
 			return ctx, ErrGuild
 		}
+		ctx.Guild.Roles, err = r.State.Roles(m.GuildID)
+		if err != nil {
+			return ctx, ErrGuild
+		}
 	}
 
 	return ctx, err

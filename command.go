@@ -48,12 +48,15 @@ type Command struct {
 	subCmds map[string]*Command
 	subMu   sync.RWMutex
 
+	// GuildPermissions is the required *global* permissions
+	GuildPermissions discord.Permissions
+	// Permissions is the required permissions in the *context channel*
 	Permissions discord.Permissions
-	Command     func(*Context) error
+	GuildOnly   bool
+	OwnerOnly   bool
 
-	GuildOnly bool
-	OwnerOnly bool
-	Cooldown  time.Duration
+	Command  func(*Context) error
+	Cooldown time.Duration
 
 	// id is a unique ID. This is automatically generated on startup and is (pretty much) guaranteed to be unique *per session*. This ID will *not* be consistent between restarts.
 	id snowflake.Snowflake
