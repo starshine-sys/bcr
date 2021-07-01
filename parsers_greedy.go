@@ -1,6 +1,6 @@
 package bcr
 
-import "github.com/diamondburned/arikawa/v2/discord"
+import "github.com/diamondburned/arikawa/v3/discord"
 
 // GreedyChannelParser parses all arguments until it finds an error.
 // Returns the parsed channels and the position at which it stopped.

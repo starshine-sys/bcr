@@ -4,10 +4,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/diamondburned/arikawa/v2/bot/extras/shellwords"
-	"github.com/diamondburned/arikawa/v2/discord"
-	"github.com/diamondburned/arikawa/v2/gateway"
-	"github.com/diamondburned/arikawa/v2/state"
+	"github.com/diamondburned/arikawa/v3/bot/extras/shellwords"
+	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/gateway"
+	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/spf13/pflag"
 )
 

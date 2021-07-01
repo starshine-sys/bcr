@@ -3,7 +3,7 @@ package bcr
 import (
 	"strings"
 
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 // Log is an updateable log message
@@ -32,14 +32,14 @@ func (ctx *Context) NewLog(title string) *Log {
 
 // Send ...
 func (log *Log) Send() {
-	e := &discord.Embed{
+	e := discord.Embed{
 		Title:       log.title,
 		Color:       log.color,
 		Description: strings.Join(log.logs, "\n"),
 	}
 
 	if log.msg == nil {
-		m, err := log.ctx.Send("", e)
+		m, err := log.ctx.Send("", &e)
 		if err != nil {
 			log.logger.Error("Error sending log message: %v", err)
 		}
@@ -47,7 +47,7 @@ func (log *Log) Send() {
 		return
 	}
 
-	_, err := log.ctx.Edit(log.msg, "", e)
+	_, err := log.ctx.Edit(log.msg, "", &e)
 	if err != nil {
 		log.logger.Error("Error sending log message: %v", err)
 	}

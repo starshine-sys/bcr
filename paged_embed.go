@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 // ErrNoEmbeds is returned if PagedEmbed() is called without any embeds
@@ -82,11 +82,11 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 		if page == 0 {
-			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
+			ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
 			ctx.AdditionalParams["page"] = len(embeds) - 1
 			return
 		}
-		ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page-1])
+		ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[page-1])
 		ctx.AdditionalParams["page"] = page - 1
 	})
 
@@ -95,11 +95,11 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 		if page >= len(embeds)-1 {
-			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
+			ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[0])
 			ctx.AdditionalParams["page"] = 0
 			return
 		}
-		ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[page+1])
+		ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[page+1])
 		ctx.AdditionalParams["page"] = page + 1
 	})
 
@@ -107,14 +107,14 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 		ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "⏪", false, true, timeout, func(ctx *Context) {
 			embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
-			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[0])
+			ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[0])
 			ctx.AdditionalParams["page"] = 0
 		})
 
 		ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "⏩", false, true, timeout, func(ctx *Context) {
 			embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
-			ctx.State.EditEmbed(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
+			ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])
 			ctx.AdditionalParams["page"] = len(embeds) - 1
 		})
 	}

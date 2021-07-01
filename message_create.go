@@ -3,7 +3,7 @@ package bcr
 import (
 	"fmt"
 
-	"github.com/diamondburned/arikawa/v2/gateway"
+	"github.com/diamondburned/arikawa/v3/gateway"
 )
 
 // MessageCreate gets called on new messages

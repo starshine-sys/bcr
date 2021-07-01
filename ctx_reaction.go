@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/diamondburned/arikawa/v2/gateway"
+	"github.com/diamondburned/arikawa/v3/gateway"
 
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 // AddReactionHandlerWithTimeout is like AddReactionHandler but accepts a timeout

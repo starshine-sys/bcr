@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/spf13/pflag"
 )
 
@@ -139,7 +139,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	// check for a cooldown
 	if r.cooldowns.Get(strings.Join(ctx.FullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID) {
-		_, err = ctx.Send(fmt.Sprintf(":x: This command can only be run once every %v.", c.Cooldown), nil)
+		_, err = ctx.Sendf(":x: This command can only be run once every %v.", c.Cooldown)
 		if err != nil {
 			return err
 		}

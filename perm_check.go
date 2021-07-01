@@ -1,6 +1,6 @@
 package bcr
 
-import "github.com/diamondburned/arikawa/v2/discord"
+import "github.com/diamondburned/arikawa/v3/discord"
 
 // GuildPerms returns the global (guild) permissions of this Context's user.
 // If in DMs, it will return the permissions users have in DMs.
@@ -64,7 +64,7 @@ func (ctx *Context) CheckBotSendPerms(ch discord.ChannelID, e bool) bool {
 	// if the bot requires embed links but doesn't have it, return false
 	if e && !perms.Has(discord.PermissionEmbedLinks) {
 		// but we *can* send an error message (at least probably, we've checked for perms already)
-		ctx.State.SendMessage(ch, ":x: I do not have permission to send embeds in this channel. Please ensure I have the `Embed Links` permission here.", nil)
+		ctx.State.SendMessage(ch, ":x: I do not have permission to send embeds in this channel. Please ensure I have the `Embed Links` permission here.")
 		return false
 	}
 

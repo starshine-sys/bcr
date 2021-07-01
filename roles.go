@@ -1,6 +1,6 @@
 package bcr
 
-import "github.com/diamondburned/arikawa/v2/discord"
+import "github.com/diamondburned/arikawa/v3/discord"
 
 // Roles are a sortable collection of discord.Role
 type Roles []discord.Role

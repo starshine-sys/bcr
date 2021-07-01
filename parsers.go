@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 var (

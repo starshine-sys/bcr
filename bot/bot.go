@@ -2,9 +2,10 @@
 package bot
 
 import (
+	"context"
 	"sort"
 
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/starshine-sys/bcr"
 )
 
@@ -67,6 +68,6 @@ func (bot *Bot) Add(f func(*Bot) (string, []*bcr.Command)) {
 }
 
 // Start wraps around Router.State.Open()
-func (bot *Bot) Start() error {
-	return bot.Router.State.Open()
+func (bot *Bot) Start(ctx context.Context) error {
+	return bot.Router.State.Open(ctx)
 }

@@ -1,6 +1,6 @@
 package bcr
 
-import "github.com/diamondburned/arikawa/v2/discord"
+import "github.com/diamondburned/arikawa/v3/discord"
 
 // Perm is a single permission
 type Perm struct {

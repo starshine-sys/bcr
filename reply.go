@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/diamondburned/arikawa/v2/api"
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/api"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 // Errors related to sending messages
@@ -15,9 +15,14 @@ var (
 
 // Send sends a message to the context channel
 func (ctx *Context) Send(content string, embed *discord.Embed) (m *discord.Message, err error) {
+	e := []discord.Embed{}
+	if embed != nil {
+		e = append(e, *embed)
+	}
+
 	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
 		Content:         content,
-		Embed:           embed,
+		Embeds:          e,
 		AllowedMentions: ctx.Router.DefaultMentions,
 	})
 }

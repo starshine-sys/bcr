@@ -1,7 +1,7 @@
 package bcr
 
 import (
-	"github.com/diamondburned/arikawa/v2/discord"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 // MatchPrefix returns true if the message content contains any of the prefixes

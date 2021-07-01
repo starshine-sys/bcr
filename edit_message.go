@@ -1,16 +1,21 @@
 package bcr
 
 import (
-	"github.com/diamondburned/arikawa/v2/api"
-	"github.com/diamondburned/arikawa/v2/discord"
-	"github.com/diamondburned/arikawa/v2/utils/json/option"
+	"github.com/diamondburned/arikawa/v3/api"
+	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/utils/json/option"
 )
 
 // Edit the given message
 func (ctx *Context) Edit(m *discord.Message, c string, embed *discord.Embed) (msg *discord.Message, err error) {
+	var e *[]discord.Embed = nil
+	if embed != nil {
+		e = &[]discord.Embed{*embed}
+	}
+
 	return ctx.State.EditMessageComplex(m.ChannelID, m.ID, api.EditMessageData{
 		Content:         option.NewNullableString(c),
-		Embed:           embed,
+		Embeds:          e,
 		AllowedMentions: ctx.Router.DefaultMentions,
 	})
 }
