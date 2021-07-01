@@ -131,3 +131,14 @@ func (r *Router) AddHandler(v interface{}) {
 		state.AddHandler(v)
 	})
 }
+
+// StateFromGuildID returns the state.State for the given guild ID
+func (r *Router) StateFromGuildID(guildID discord.GuildID) (st *state.State, id int) {
+	if guildID.IsValid() {
+		s, shardID := r.ShardManager.FromGuildID(guildID)
+		return s.(shard.ShardState).Shard.(*state.State), shardID
+	}
+
+	s := r.ShardManager.Shard(0)
+	return s.(shard.ShardState).Shard.(*state.State), 0
+}

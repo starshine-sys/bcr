@@ -5,8 +5,6 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
-	"github.com/diamondburned/arikawa/v3/gateway/shard"
-	"github.com/diamondburned/arikawa/v3/state"
 )
 
 // MessageCreate gets called on new messages
@@ -57,9 +55,9 @@ func (r *Router) mustSetBotUser(guildID discord.GuildID) {
 
 // SetBotUser sets the router's bot user, returning any errors
 func (r *Router) SetBotUser(guildID discord.GuildID) error {
-	s, _ := r.ShardManager.FromGuildID(guildID)
+	s, _ := r.StateFromGuildID(guildID)
 
-	me, err := s.(shard.ShardState).Shard.(*state.State).Me()
+	me, err := s.Me()
 	if err != nil {
 		return err
 	}

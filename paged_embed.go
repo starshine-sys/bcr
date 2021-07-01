@@ -37,13 +37,14 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 		return
 	}
 
-	timer = time.AfterFunc(timeout, func() {
-		ctx.State.DeleteAllReactions(msg.ChannelID, msg.ID)
-	})
+	// this doesn't seem to work rn for some reason
+	// timer = time.AfterFunc(timeout, func() {
+	// 	ctx.State.DeleteAllReactions(msg.ChannelID, msg.ID)
+	// })
 
 	// add :x: handler
 	ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "❌", true, false, timeout, func(*Context) {
-		timer.Stop()
+		// timer.Stop()
 		err = ctx.State.DeleteMessage(ctx.Channel.ID, msg.ID)
 		if err != nil {
 			ctx.Router.Logger.Error("deleting message: %v", err)

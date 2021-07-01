@@ -7,7 +7,6 @@ import (
 	"github.com/diamondburned/arikawa/v3/bot/extras/shellwords"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
-	"github.com/diamondburned/arikawa/v3/gateway/shard"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/spf13/pflag"
 )
@@ -116,14 +115,7 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 		AdditionalParams: make(map[string]interface{}),
 	}
 
-	if m.GuildID.IsValid() {
-		s, shardID := r.ShardManager.FromGuildID(m.GuildID)
-		ctx.State = s.(shard.ShardState).Shard.(*state.State)
-		ctx.ShardID = shardID
-	} else {
-		ctx.State = r.ShardManager.Shard(0).(shard.ShardState).Shard.(*state.State)
-		ctx.ShardID = 0
-	}
+	ctx.State, ctx.ShardID = r.StateFromGuildID(m.GuildID)
 
 	// get the channel
 	ctx.Channel, err = ctx.State.Channel(m.ChannelID)
