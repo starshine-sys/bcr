@@ -8,6 +8,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
+	"github.com/diamondburned/arikawa/v3/gateway/shard"
 	"github.com/diamondburned/arikawa/v3/state"
 )
 
@@ -26,9 +27,9 @@ type Router struct {
 	Prefixes []string
 	Prefixer Prefixer
 
-	State  *state.State
-	Bot    *discord.User
-	Logger *Logger
+	ShardManager *shard.Manager
+	Bot          *discord.User
+	Logger       *Logger
 
 	BlacklistFunc   func(*Context) bool
 	HelpCommand     func(*Context) error
@@ -49,12 +50,12 @@ type Router struct {
 }
 
 // New creates a new router object
-func New(s *state.State, owners, prefixes []string) *Router {
+func New(s *shard.Manager, owners, prefixes []string) *Router {
 	r := &Router{
-		State:      s,
-		BotOwners:  owners,
-		Prefixes:   prefixes,
-		EmbedColor: discord.DefaultEmbedColor,
+		ShardManager: s,
+		BotOwners:    owners,
+		Prefixes:     prefixes,
+		EmbedColor:   discord.DefaultEmbedColor,
 
 		Logger: NewStdlibLogger(false),
 
@@ -74,9 +75,9 @@ func New(s *state.State, owners, prefixes []string) *Router {
 	r.Prefixer = r.DefaultPrefixer
 
 	// add required handlers
-	r.State.AddHandler(r.ReactionAdd)
-	r.State.AddHandler(r.ReactionMessageDelete)
-	r.State.AddHandler(r.MsgHandlerCreate)
+	r.AddHandler(r.ReactionAdd)
+	r.AddHandler(r.ReactionMessageDelete)
+	r.AddHandler(r.MsgHandlerCreate)
 
 	return r
 }
@@ -94,12 +95,17 @@ func NewWithIntents(token string, owners []discord.UserID, prefixes []string, in
 	for _, o := range owners {
 		ownerStrings = append(ownerStrings, o.String())
 	}
-	s, err := state.NewWithIntents("Bot "+token, intents)
+
+	newShard := state.NewShardFunc(func(m *shard.Manager, s *state.State) {
+		s.AddIntents(intents)
+	})
+
+	m, err := shard.NewManager("Bot "+token, newShard)
 	if err != nil {
 		return nil, err
 	}
 
-	r := New(s, ownerStrings, prefixes)
+	r := New(m, ownerStrings, prefixes)
 	return r, nil
 }
 
@@ -115,4 +121,13 @@ func (r *Router) AddCommand(c *Command) *Command {
 	}
 
 	return c
+}
+
+// AddHandler adds a handler to all States in this Router
+func (r *Router) AddHandler(v interface{}) {
+	r.ShardManager.ForEach(func(s shard.Shard) {
+		state := s.(*state.State)
+
+		state.AddHandler(v)
+	})
 }

@@ -3,6 +3,7 @@ package bcr
 import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
+	"github.com/diamondburned/arikawa/v3/state"
 )
 
 type reactionInfo struct {
@@ -31,10 +32,13 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 		// - the user isn't the user the reaction's for
 		// - or the reaction is supposed to be deleted
 		// - and the user is not the bot user
-		if (v.userID != e.UserID || v.deleteReaction) && e.GuildID != 0 && e.UserID != r.Bot.ID {
-			if p, err := r.State.Permissions(e.ChannelID, r.Bot.ID); err == nil {
+		if (v.userID != e.UserID || v.deleteReaction) && e.GuildID.IsValid() && e.UserID != r.Bot.ID {
+			s, _ := r.ShardManager.FromGuildID(e.GuildID)
+			state := s.(*state.State)
+
+			if p, err := state.Permissions(e.ChannelID, r.Bot.ID); err == nil {
 				if p.Has(discord.PermissionManageMessages) {
-					r.State.DeleteUserReaction(e.ChannelID, e.MessageID, e.UserID, e.Emoji.APIString())
+					state.DeleteUserReaction(e.ChannelID, e.MessageID, e.UserID, e.Emoji.APIString())
 				}
 			}
 		}

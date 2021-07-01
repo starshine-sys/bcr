@@ -7,6 +7,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/bot/extras/shellwords"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
+	"github.com/diamondburned/arikawa/v3/gateway/shard"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/spf13/pflag"
 )
@@ -51,8 +52,10 @@ type Context struct {
 	InternalArgs []string
 	pos          int
 
-	State *state.State
-	Bot   *discord.User
+	State   *state.State
+	ShardID int
+
+	Bot *discord.User
 
 	// Info about the message
 	Message discord.Message
@@ -109,23 +112,31 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 		Member:           m.Member,
 		RawArgs:          raw,
 		Router:           r,
-		State:            r.State,
 		Bot:              r.Bot,
 		AdditionalParams: make(map[string]interface{}),
 	}
 
+	if m.GuildID.IsValid() {
+		s, shardID := r.ShardManager.FromGuildID(m.GuildID)
+		ctx.State = s.(shard.ShardState).Shard.(*state.State)
+		ctx.ShardID = shardID
+	} else {
+		ctx.State = r.ShardManager.Shard(0).(shard.ShardState).Shard.(*state.State)
+		ctx.ShardID = 0
+	}
+
 	// get the channel
-	ctx.Channel, err = r.State.Channel(m.ChannelID)
+	ctx.Channel, err = ctx.State.Channel(m.ChannelID)
 	if err != nil {
 		return ctx, ErrChannel
 	}
 	// get guild
 	if m.GuildID.IsValid() {
-		ctx.Guild, err = r.State.Guild(m.GuildID)
+		ctx.Guild, err = ctx.State.Guild(m.GuildID)
 		if err != nil {
 			return ctx, ErrGuild
 		}
-		ctx.Guild.Roles, err = r.State.Roles(m.GuildID)
+		ctx.Guild.Roles, err = ctx.State.Roles(m.GuildID)
 		if err != nil {
 			return ctx, ErrGuild
 		}

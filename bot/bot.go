@@ -67,7 +67,7 @@ func (bot *Bot) Add(f func(*Bot) (string, []*bcr.Command)) {
 	})
 }
 
-// Start wraps around Router.State.Open()
+// Start wraps around Router.ShardManager.Open()
 func (bot *Bot) Start(ctx context.Context) error {
-	return bot.Router.State.Open(ctx)
+	return bot.Router.ShardManager.Open(ctx)
 }

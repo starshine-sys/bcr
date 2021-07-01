@@ -3,7 +3,10 @@ package bcr
 import (
 	"fmt"
 
+	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
+	"github.com/diamondburned/arikawa/v3/gateway/shard"
+	"github.com/diamondburned/arikawa/v3/state"
 )
 
 // MessageCreate gets called on new messages
@@ -15,7 +18,7 @@ func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
 
 	// set the bot user if not done already
 	if r.Bot == nil {
-		r.mustSetBotUser()
+		r.mustSetBotUser(m.GuildID)
 		r.Prefixes = append(r.Prefixes, fmt.Sprintf("<@%v>", r.Bot.ID), fmt.Sprintf("<@!%v>", r.Bot.ID))
 	}
 
@@ -45,16 +48,18 @@ func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
 
 // mustSetBotUser sets the bot user in the router, panicking if it fails.
 // This is intended to be used in MessageCreate to simplify error handling
-func (r *Router) mustSetBotUser() {
-	err := r.SetBotUser()
+func (r *Router) mustSetBotUser(guildID discord.GuildID) {
+	err := r.SetBotUser(guildID)
 	if err != nil {
 		panic(err)
 	}
 }
 
 // SetBotUser sets the router's bot user, returning any errors
-func (r *Router) SetBotUser() error {
-	me, err := r.State.Me()
+func (r *Router) SetBotUser(guildID discord.GuildID) error {
+	s, _ := r.ShardManager.FromGuildID(guildID)
+
+	me, err := s.(shard.ShardState).Shard.(*state.State).Me()
 	if err != nil {
 		return err
 	}
