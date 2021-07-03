@@ -32,7 +32,7 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 	ctx.AdditionalParams["embeds"] = embeds
 
 	// send the first embed
-	msg, err = ctx.Send("", &embeds[0])
+	msg, err = ctx.Send("", embeds[0])
 	if err != nil {
 		return
 	}

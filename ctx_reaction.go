@@ -148,31 +148,3 @@ func (ctx *Context) WaitForReactionWithTimeout(msg discord.Message, user discord
 	}
 	return ev, nil
 }
-
-// Confirm confirms the given string to the context user
-func (ctx *Context) Confirm(s string) (yes bool) {
-	m, err := ctx.Sendf("Are you sure you want to %v?", s)
-	if err != nil {
-		ctx.Router.Logger.Error("sending message: %v", err)
-		return false
-	}
-
-	yes, timeout := ctx.YesNoHandlerWithTimeout(*m, ctx.Author.ID, 3*time.Minute)
-	if timeout {
-		_, err = ctx.Send(":x: Operation timed out.", nil)
-		if err != nil {
-			ctx.Router.Logger.Error("sending message: %v", err)
-		}
-		return false
-	}
-
-	if !yes {
-		_, err = ctx.Send(":x: Operation cancelled.", nil)
-		if err != nil {
-			ctx.Router.Logger.Error("sending message: %v", err)
-		}
-		return false
-	}
-
-	return true
-}

@@ -59,7 +59,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	// if the command is guild-only or needs extra permissions, and this isn't a guild channel, error
 	if (c.GuildOnly || c.Permissions != 0) && ctx.Message.GuildID == 0 {
-		_, err = ctx.Send(":x: This command cannot be run in DMs.", nil)
+		_, err = ctx.Send(":x: This command cannot be run in DMs.")
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	// if the command requires bot owner to use, and the user isn't a bot owner, error
 	if !ctx.checkOwner() {
-		_, err = ctx.Send(":x: This command can only be used by a bot owner.", nil)
+		_, err = ctx.Send(":x: This command can only be used by a bot owner.")
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	if c.GuildPermissions != 0 {
 		if ctx.Guild == nil || ctx.Member == nil {
-			_, err = ctx.Send(":x: This command cannot be used in DMs.", nil)
+			_, err = ctx.Send(":x: This command cannot be used in DMs.")
 			return errCommandRun
 		}
 		if !ctx.GuildPerms().Has(c.GuildPermissions) {
@@ -101,7 +101,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 	if c.Permissions != 0 {
 		if ctx.Guild == nil || ctx.Channel == nil || ctx.Member == nil {
-			_, err = ctx.Send(":x: This command cannot be used in DMs.", nil)
+			_, err = ctx.Send(":x: This command cannot be used in DMs.")
 			return errCommandRun
 		}
 		if !discord.CalcOverwrites(*ctx.Guild, *ctx.Channel, *ctx.Member).Has(c.Permissions) {
@@ -120,7 +120,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		b, err := c.CustomPermissions.Check(ctx)
 		// if it errored, send that error and return
 		if err != nil {
-			_, err = ctx.Send(fmt.Sprintf(":x: An internal error occurred when checking your permissions.\nThe following permission(s) could not be checked:\n> ```%s```", c.CustomPermissions), nil)
+			_, err = ctx.Send(fmt.Sprintf(":x: An internal error occurred when checking your permissions.\nThe following permission(s) could not be checked:\n> ```%s```", c.CustomPermissions))
 			if err != nil {
 				return err
 			}
@@ -129,7 +129,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 		// else if it returned false, show that error and return
 		if !b {
-			_, err = ctx.Send(fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permission(s):\n> ```%s```", c.CustomPermissions), nil)
+			_, err = ctx.Send(fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permission(s):\n> ```%s```", c.CustomPermissions))
 			if err != nil {
 				return err
 			}
@@ -153,7 +153,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 
 		err = ctx.Flags.Parse(ctx.Args)
 		if err != nil {
-			_, err = ctx.Send(":x: There was an error parsing your input. Try checking this command's help.", nil)
+			_, err = ctx.Send(":x: There was an error parsing your input. Try checking this command's help.")
 			return
 		}
 		ctx.Args = ctx.Flags.Args()

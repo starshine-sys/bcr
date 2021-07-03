@@ -38,13 +38,13 @@ func (ctx *Context) Help(path []string) (err error) {
 
 		// we tried recursing, but the map is nil, so the command wasn't found
 		if cmds == nil {
-			_, err = ctx.Send(fmt.Sprintf(":x: Command ``%v`` not found.", EscapeBackticks(strings.Join(path, " "))), nil)
+			_, err = ctx.Send(fmt.Sprintf(":x: Command ``%v`` not found.", EscapeBackticks(strings.Join(path, " "))))
 			return err
 		}
 
 		// the command name wasn't found
 		if cmd, ok = cmds[n]; !ok {
-			_, err = ctx.Send(fmt.Sprintf(":x: Command ``%v`` not found.", EscapeBackticks(strings.Join(path, " "))), nil)
+			_, err = ctx.Send(fmt.Sprintf(":x: Command ``%v`` not found.", EscapeBackticks(strings.Join(path, " "))))
 			return err
 		}
 
@@ -55,7 +55,7 @@ func (ctx *Context) Help(path []string) (err error) {
 	}
 
 	if cmd == nil {
-		_, err = ctx.Send(fmt.Sprintf(":x: Command ``%v`` not found.", EscapeBackticks(strings.Join(path, " "))), nil)
+		_, err = ctx.Send(fmt.Sprintf(":x: Command ``%v`` not found.", EscapeBackticks(strings.Join(path, " "))))
 		return err
 	}
 
@@ -175,7 +175,7 @@ func (ctx *Context) Help(path []string) (err error) {
 		})
 	}
 
-	_, err = ctx.Send("", &discord.Embed{
+	_, err = ctx.Send("", discord.Embed{
 		Title:       "`" + strings.ToUpper(strings.Join(title, " ")) + "`",
 		Description: DefaultValue(cmd.Summary, "No summary provided"),
 		Fields:      fields,

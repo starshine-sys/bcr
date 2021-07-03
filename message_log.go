@@ -39,7 +39,7 @@ func (log *Log) Send() {
 	}
 
 	if log.msg == nil {
-		m, err := log.ctx.Send("", &e)
+		m, err := log.ctx.Send("", e)
 		if err != nil {
 			log.logger.Error("Error sending log message: %v", err)
 		}
@@ -47,7 +47,7 @@ func (log *Log) Send() {
 		return
 	}
 
-	_, err := log.ctx.Edit(log.msg, "", &e)
+	_, err := log.ctx.Edit(log.msg, "", true, e)
 	if err != nil {
 		log.logger.Error("Error sending log message: %v", err)
 	}
