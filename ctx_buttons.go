@@ -2,7 +2,9 @@ package bcr
 
 import (
 	"context"
+	"errors"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/diamondburned/arikawa/v3/api"
@@ -141,4 +143,213 @@ func (ctx *Context) ConfirmButton(userID discord.UserID, data ConfirmData) (yes,
 	}
 
 	return
+}
+
+type buttonKey struct {
+	msg      discord.MessageID
+	user     discord.UserID
+	customID string
+}
+
+type buttonInfo struct {
+	ctx    *Context
+	fn     func(*Context, *gateway.InteractionCreateEvent)
+	delete bool
+}
+
+// ButtonRemoveFunc is returned by AddButtonHandler
+type ButtonRemoveFunc func()
+
+// AddButtonHandler adds a handler for the given message ID, user ID, and custom ID
+func (ctx *Context) AddButtonHandler(
+	msg discord.MessageID,
+	user discord.UserID,
+	customID string,
+	del bool,
+	fn func(*Context, *gateway.InteractionCreateEvent),
+) ButtonRemoveFunc {
+	ctx.Router.buttonMu.Lock()
+	defer ctx.Router.buttonMu.Unlock()
+
+	ctx.Router.buttons[buttonKey{msg, user, customID}] = buttonInfo{ctx, fn, del}
+
+	return func() {
+		ctx.Router.buttonMu.Lock()
+		delete(ctx.Router.buttons, buttonKey{msg, user, customID})
+		ctx.Router.buttonMu.Unlock()
+	}
+}
+
+// ButtonHandler handles buttons added by ctx.AddButtonHandler
+func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
+	if ev.Message == nil ||
+		(ev.Member == nil && ev.User == nil) ||
+		ev.Data == nil {
+		return
+	}
+	if ev.Data.CustomID == "" {
+		return
+	}
+
+	var user discord.UserID
+	if ev.Member != nil {
+		user = ev.Member.User.ID
+	} else {
+		user = ev.User.ID
+	}
+
+	r.buttonMu.RLock()
+	info, ok := r.buttons[buttonKey{ev.Message.ID, user, ev.Data.CustomID}]
+	r.buttonMu.RUnlock()
+
+	if !ok {
+		return
+	}
+
+	info.fn(info.ctx, ev)
+
+	if info.delete {
+		r.buttonMu.Lock()
+		delete(r.buttons, buttonKey{ev.Message.ID, user, ev.Data.CustomID})
+		r.buttonMu.Unlock()
+	}
+}
+
+// ButtonPages is like PagedEmbed but uses buttons instead of reactions.
+func (ctx *Context) ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error) {
+	rmFunc = func() {}
+
+	if len(embeds) == 0 {
+		return nil, func() {}, errors.New("no embeds")
+	}
+
+	if len(embeds) == 1 {
+		msg, err = ctx.State.SendEmbeds(ctx.Message.ChannelID, embeds[0])
+		return
+	}
+
+	msg, err = ctx.State.SendMessageComplex(ctx.Message.ChannelID, api.SendMessageData{
+		Embeds: []discord.Embed{embeds[0]},
+		Components: []discord.Component{discord.ActionRowComponent{
+			Components: []discord.Component{
+				discord.ButtonComponent{
+					Emoji: &discord.ButtonEmoji{
+						Name: "⏪",
+					},
+					Style:    discord.SecondaryButton,
+					CustomID: "first",
+				},
+				discord.ButtonComponent{
+					Emoji: &discord.ButtonEmoji{
+						Name: "⬅️",
+					},
+					Style:    discord.SecondaryButton,
+					CustomID: "prev",
+				},
+				discord.ButtonComponent{
+					Emoji: &discord.ButtonEmoji{
+						Name: "➡️",
+					},
+					Style:    discord.SecondaryButton,
+					CustomID: "next",
+				},
+				discord.ButtonComponent{
+					Emoji: &discord.ButtonEmoji{
+						Name: "⏩",
+					},
+					Style:    discord.SecondaryButton,
+					CustomID: "last",
+				},
+				discord.ButtonComponent{
+					Emoji: &discord.ButtonEmoji{
+						Name: "❌",
+					},
+					Style:    discord.SecondaryButton,
+					CustomID: "cross",
+				},
+			},
+		}},
+	})
+	if err != nil {
+		return
+	}
+
+	page := 0
+
+	prev := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "prev", false, func(ctx *Context, ev *gateway.InteractionCreateEvent) {
+		if page == 0 {
+			page = len(embeds) - 1
+		} else {
+			page--
+		}
+
+		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
+			Type: api.UpdateMessage,
+			Data: &api.InteractionResponseData{
+				Embeds: &[]discord.Embed{embeds[page]},
+			},
+		})
+	})
+
+	next := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "next", false, func(ctx *Context, ev *gateway.InteractionCreateEvent) {
+		if page >= len(embeds)-1 {
+			page = 0
+		} else {
+			page++
+		}
+
+		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
+			Type: api.UpdateMessage,
+			Data: &api.InteractionResponseData{
+				Embeds: &[]discord.Embed{embeds[page]},
+			},
+		})
+	})
+
+	first := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "first", false, func(ctx *Context, ev *gateway.InteractionCreateEvent) {
+		page = 0
+
+		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
+			Type: api.UpdateMessage,
+			Data: &api.InteractionResponseData{
+				Embeds: &[]discord.Embed{embeds[page]},
+			},
+		})
+	})
+
+	last := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "last", false, func(ctx *Context, ev *gateway.InteractionCreateEvent) {
+		page = len(embeds) - 1
+
+		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
+			Type: api.UpdateMessage,
+			Data: &api.InteractionResponseData{
+				Embeds: &[]discord.Embed{embeds[page]},
+			},
+		})
+	})
+
+	var o sync.Once
+
+	cross := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "cross", false, func(ctx *Context, ev *gateway.InteractionCreateEvent) {
+		ctx.State.EditMessageComplex(msg.ChannelID, msg.ID, api.EditMessageData{
+			Components: &[]discord.Component{},
+		})
+	})
+
+	rmFunc = func() {
+		o.Do(func() {
+			ctx.State.EditMessageComplex(msg.ChannelID, msg.ID, api.EditMessageData{
+				Components: &[]discord.Component{},
+			})
+
+			prev()
+			next()
+			first()
+			last()
+			cross()
+		})
+	}
+
+	time.AfterFunc(timeout, rmFunc)
+	return msg, rmFunc, err
 }

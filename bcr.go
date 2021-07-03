@@ -47,6 +47,8 @@ type Router struct {
 	reactionMu sync.RWMutex
 	messages   map[messageKey]messageInfo
 	messageMu  sync.RWMutex
+	buttons    map[buttonKey]buttonInfo
+	buttonMu   sync.RWMutex
 }
 
 // New creates a new router object
@@ -68,6 +70,7 @@ func New(s *shard.Manager, owners, prefixes []string) *Router {
 		cmds:      make(map[string]*Command),
 		reactions: make(map[reactionKey]reactionInfo),
 		messages:  make(map[messageKey]messageInfo),
+		buttons:   make(map[buttonKey]buttonInfo),
 		cooldowns: newCooldownCache(),
 	}
 
@@ -78,6 +81,7 @@ func New(s *shard.Manager, owners, prefixes []string) *Router {
 	r.AddHandler(r.ReactionAdd)
 	r.AddHandler(r.ReactionMessageDelete)
 	r.AddHandler(r.MsgHandlerCreate)
+	r.AddHandler(r.ButtonHandler)
 
 	return r
 }
