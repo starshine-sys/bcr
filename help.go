@@ -89,12 +89,17 @@ func (ctx *Context) Help(path []string) (err error) {
 	if fs != nil {
 		usage += " "
 		fs.VisitAll(func(f *pflag.Flag) {
-			usage += fmt.Sprintf("[-%v %v] ", f.Shorthand, f.Value.Type())
+			s := fmt.Sprintf("-%v", f.Shorthand)
+			if f.Value.Type() != "bool" {
+				s += " " + f.Value.Type()
+			}
+
+			usage += "[" + s + "] "
 		})
 	}
 
 	if cmd.Usage != "" {
-		usage += " " + cmd.Usage
+		usage += cmd.Usage
 	}
 
 	fields = append(fields, discord.EmbedField{
@@ -108,6 +113,8 @@ func (ctx *Context) Help(path []string) (err error) {
 		fs.VisitAll(func(f *pflag.Flag) {
 			desc += fmt.Sprintf("`-%v, --%v`: %v\n", f.Shorthand, f.Name, f.Usage)
 		})
+
+		desc += "\n\nSquare brackets (`[]`) denote that an argument is **optional**.\nTo input an argument with spaces, wrap it in quotes (`\"\"`); to add quotes, escape them with a backslash (`\\`)."
 
 		fields = append(fields, discord.EmbedField{
 			Name:  "Flags",
