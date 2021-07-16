@@ -62,6 +62,9 @@ type Context struct {
 	Guild   *discord.Guild
 	Author  discord.User
 
+	// ParentChannel is only filled if ctx.Channel is a thread
+	ParentChannel *discord.Channel
+
 	// Note: Member is nil for non-guild messages
 	Member *discord.Member
 
@@ -122,6 +125,14 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 	if err != nil {
 		return ctx, ErrChannel
 	}
+
+	if ctx.Thread() {
+		ctx.ParentChannel, err = ctx.State.Channel(ctx.Channel.CategoryID)
+		if err != nil {
+			return ctx, ErrChannel
+		}
+	}
+
 	// get guild
 	if m.GuildID.IsValid() {
 		ctx.Guild, err = ctx.State.Guild(m.GuildID)
@@ -146,4 +157,10 @@ func (ctx *Context) DisplayName() string {
 		return ctx.Author.Username
 	}
 	return ctx.Member.Nick
+}
+
+// Thread returns true if the context is in a thread channel.
+// If this function returns true, ctx.ParentChannel will be non-nil.
+func (ctx *Context) Thread() bool {
+	return ctx.Channel.Type == discord.GuildNewsThread || ctx.Channel.Type == discord.GuildPublicThread || ctx.Channel.Type == discord.GuildPrivateThread
 }
