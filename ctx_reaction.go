@@ -41,6 +41,50 @@ func (ctx *Context) AddReactionHandlerWithTimeout(
 	})
 }
 
+// AddReactionHandlerRemove adds a reaction handler for the given message.
+// This handler is also called when the reaction is *removed*.
+func (ctx *Context) AddReactionHandlerRemove(
+	msg discord.MessageID,
+	user discord.UserID,
+	reaction string,
+	deleteOnTrigger, deleteReaction bool,
+	fn func(*Context),
+) {
+	ctx.AddReactionHandlerWithTimeoutRemove(msg, user, reaction, deleteOnTrigger, deleteReaction, ctx.Router.ReactTimeout, fn)
+	return
+}
+
+// AddReactionHandlerWithTimeoutRemove is like AddReactionHandlerRemove but accepts a timeout
+func (ctx *Context) AddReactionHandlerWithTimeoutRemove(
+	msg discord.MessageID,
+	user discord.UserID,
+	reaction string,
+	deleteOnTrigger, deleteReaction bool,
+	timeout time.Duration,
+	fn func(*Context),
+) {
+	ctx.Router.reactionMu.Lock()
+
+	ctx.Router.reactions[reactionKey{
+		messageID: msg,
+		emoji:     discord.APIEmoji(reaction),
+	}] = reactionInfo{
+		userID:          user,
+		ctx:             ctx,
+		fn:              fn,
+		deleteOnTrigger: deleteOnTrigger,
+		deleteReaction:  deleteReaction,
+		respondToRemove: true,
+	}
+
+	ctx.Router.reactionMu.Unlock()
+
+	// delete handlers after the set time to stop them from building up
+	time.AfterFunc(ctx.Router.ReactTimeout, func() {
+		ctx.Router.DeleteReactions(msg)
+	})
+}
+
 // AddReactionHandler adds a reaction handler for the given message
 func (ctx *Context) AddReactionHandler(
 	msg discord.MessageID,

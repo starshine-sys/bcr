@@ -79,6 +79,7 @@ func New(s *shard.Manager, owners, prefixes []string) *Router {
 
 	// add required handlers
 	r.AddHandler(r.ReactionAdd)
+	r.AddHandler(r.ReactionRemove)
 	r.AddHandler(r.ReactionMessageDelete)
 	r.AddHandler(r.MsgHandlerCreate)
 	r.AddHandler(r.ButtonHandler)

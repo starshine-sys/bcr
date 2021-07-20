@@ -78,7 +78,7 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 	}
 
 	// add handlers for the reactions
-	ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "⬅️", false, true, timeout, func(ctx *Context) {
+	ctx.AddReactionHandlerWithTimeoutRemove(msg.ID, ctx.Author.ID, "⬅️", false, true, timeout, func(ctx *Context) {
 		page := ctx.AdditionalParams["page"].(int)
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
@@ -91,7 +91,7 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 		ctx.AdditionalParams["page"] = page - 1
 	})
 
-	ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "➡️", false, true, timeout, func(ctx *Context) {
+	ctx.AddReactionHandlerWithTimeoutRemove(msg.ID, ctx.Author.ID, "➡️", false, true, timeout, func(ctx *Context) {
 		page := ctx.AdditionalParams["page"].(int)
 		embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
@@ -105,14 +105,14 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 	})
 
 	if extendedReactions {
-		ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "⏪", false, true, timeout, func(ctx *Context) {
+		ctx.AddReactionHandlerWithTimeoutRemove(msg.ID, ctx.Author.ID, "⏪", false, true, timeout, func(ctx *Context) {
 			embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 			ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[0])
 			ctx.AdditionalParams["page"] = 0
 		})
 
-		ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "⏩", false, true, timeout, func(ctx *Context) {
+		ctx.AddReactionHandlerWithTimeoutRemove(msg.ID, ctx.Author.ID, "⏩", false, true, timeout, func(ctx *Context) {
 			embeds := ctx.AdditionalParams["embeds"].([]discord.Embed)
 
 			ctx.State.EditEmbeds(ctx.Channel.ID, msg.ID, embeds[len(embeds)-1])

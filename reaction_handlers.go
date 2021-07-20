@@ -11,6 +11,7 @@ type reactionInfo struct {
 	fn              func(*Context)
 	deleteOnTrigger bool
 	deleteReaction  bool
+	respondToRemove bool
 }
 
 type reactionKey struct {
@@ -26,6 +27,10 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 		messageID: e.MessageID,
 		emoji:     e.Emoji.APIString(),
 	}]; ok {
+		// check if the reacting user is the same as the required user
+		if v.userID != e.UserID {
+			return
+		}
 		// handle deleting the reaction
 		// only delete if:
 		// - the user isn't the user the reaction's for
@@ -40,18 +45,46 @@ func (r *Router) ReactionAdd(e *gateway.MessageReactionAddEvent) {
 				}
 			}
 		}
-		// check if the reacting user is the same as the required user
-		if v.userID != e.UserID {
-			return
-		}
 		// run the handler
-		v.fn(v.ctx)
+		// fork this off to a goroutine to unlock the reaction mutex immediately
+		go v.fn(v.ctx)
 
 		// if the handler should be deleted after running, do that
 		if v.deleteOnTrigger {
 			delete(r.reactions, reactionKey{
 				messageID: e.MessageID,
 				emoji:     e.Emoji.APIString(),
+			})
+		}
+	}
+}
+
+// ReactionRemove runs when a reaction is removed from a message
+func (r *Router) ReactionRemove(ev *gateway.MessageReactionRemoveEvent) {
+	r.reactionMu.Lock()
+	defer r.reactionMu.Unlock()
+	if v, ok := r.reactions[reactionKey{
+		messageID: ev.MessageID,
+		emoji:     ev.Emoji.APIString(),
+	}]; ok {
+		if !v.respondToRemove {
+			return
+		}
+
+		// check if the reacting user is the same as the required user
+		if v.userID != ev.UserID {
+			return
+		}
+
+		// run the handler
+		// fork this off to a goroutine to unlock the reaction mutex immediately
+		go v.fn(v.ctx)
+
+		// if the handler should be deleted after running, do that
+		if v.deleteOnTrigger {
+			delete(r.reactions, reactionKey{
+				messageID: ev.MessageID,
+				emoji:     ev.Emoji.APIString(),
 			})
 		}
 	}
