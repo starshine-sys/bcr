@@ -60,10 +60,21 @@ type Command struct {
 
 	// id is a unique ID. This is automatically generated on startup and is (pretty much) guaranteed to be unique *per session*. This ID will *not* be consistent between restarts.
 	id snowflake.Snowflake
+
+	// Executed when a slash command is executed, with a *SlashContext being passed in.
+	// Also executed when Command is nil, with a *Context being passed in instead.
+	SlashCommand func(Contexter) error
+	// If this is set and SlashCommand is nil, AddCommand *will panic!*
+	// Even if the command has no options, this should be set to an empty slice rather than nil.
+	Options *[]discord.CommandOption
 }
 
 // AddSubcommand adds a subcommand to a command
 func (c *Command) AddSubcommand(sub *Command) *Command {
+	if c.Options != nil && c.SlashCommand == nil {
+		panic("command.Options set without command.SlashCommand being set")
+	}
+
 	sub.id = sGen.Get()
 	c.subMu.Lock()
 	defer c.subMu.Unlock()

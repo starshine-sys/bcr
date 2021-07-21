@@ -165,8 +165,11 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		return err
 	}
 
-	// execute the command
-	err = c.Command(ctx)
+	if c.Command != nil {
+		err = c.Command(ctx)
+	} else {
+		err = c.SlashCommand(ctx)
+	}
 	if err != nil {
 		return err
 	}

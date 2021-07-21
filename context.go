@@ -34,6 +34,8 @@ func (r *Router) DefaultPrefixer(m discord.Message) int {
 	return -1
 }
 
+var _ Contexter = (*Context)(nil)
+
 // Context is a command context
 type Context struct {
 	// Command and Prefix contain the invoked command's name and prefix, respectively.
@@ -163,4 +165,9 @@ func (ctx *Context) DisplayName() string {
 // If this function returns true, ctx.ParentChannel will be non-nil.
 func (ctx *Context) Thread() bool {
 	return ctx.Channel.Type == discord.GuildNewsThread || ctx.Channel.Type == discord.GuildPublicThread || ctx.Channel.Type == discord.GuildPrivateThread
+}
+
+// Session returns this context's state.
+func (ctx *Context) Session() *state.State {
+	return ctx.State
 }

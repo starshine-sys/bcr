@@ -116,6 +116,10 @@ func NewWithIntents(token string, owners []discord.UserID, prefixes []string, in
 
 // AddCommand adds a command to the router
 func (r *Router) AddCommand(c *Command) *Command {
+	if c.Options != nil && c.SlashCommand == nil {
+		panic("command.Options set without command.SlashCommand being set")
+	}
+
 	c.id = sGen.Get()
 	r.cmdMu.Lock()
 	defer r.cmdMu.Unlock()
