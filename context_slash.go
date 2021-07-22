@@ -41,6 +41,13 @@ type SlashContext struct {
 	Command *Command
 	Router  *Router
 	State   *state.State
+	Guild   *discord.Guild
+
+	User   discord.User
+	Member *discord.Member
+
+	Channel       *discord.Channel
+	ParentChannel *discord.Channel
 
 	// Event is the original raw event
 	Event *gateway.InteractionCreateEvent
@@ -58,6 +65,8 @@ var (
 
 // NewSlashContext creates a new slash command context.
 func (r *Router) NewSlashContext(ic *gateway.InteractionCreateEvent) (*SlashContext, error) {
+	var err error
+
 	if ic.Type != gateway.CommandInteraction {
 		return nil, ErrNotCommand
 	}
@@ -72,10 +81,48 @@ func (r *Router) NewSlashContext(ic *gateway.InteractionCreateEvent) (*SlashCont
 		InteractionToken: ic.Token,
 	}
 
+	if ic.Member != nil {
+		sc.Member = ic.Member
+		sc.User = ic.Member.User
+	} else {
+		sc.User = *ic.User
+	}
+
 	state, _ := r.StateFromGuildID(ic.GuildID)
 	sc.State = state
 
+	// get guild
+	if ic.GuildID.IsValid() {
+		sc.Guild, err = sc.State.Guild(ic.GuildID)
+		if err != nil {
+			return sc, ErrGuild
+		}
+		sc.Guild.Roles, err = sc.State.Roles(ic.GuildID)
+		if err != nil {
+			return sc, ErrGuild
+		}
+	}
+
+	// get the channel
+	sc.Channel, err = sc.State.Channel(ic.ChannelID)
+	if err != nil {
+		return sc, ErrChannel
+	}
+
+	if sc.Thread() {
+		sc.ParentChannel, err = sc.State.Channel(sc.Channel.CategoryID)
+		if err != nil {
+			return sc, ErrChannel
+		}
+	}
+
 	return sc, nil
+}
+
+// Thread returns true if the context is in a thread channel.
+// If this function returns true, ctx.ParentChannel will be non-nil.
+func (ctx *SlashContext) Thread() bool {
+	return ctx.Channel.Type == discord.GuildNewsThread || ctx.Channel.Type == discord.GuildPublicThread || ctx.Channel.Type == discord.GuildPrivateThread
 }
 
 // SendX sends a message without returning the created discord.Message
