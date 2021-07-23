@@ -108,7 +108,7 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 
 	page := 0
 
-	prev := ctx.AddButtonHandler(msg.ID, ctx.User.ID, "prev", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
+	prev := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "prev", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		if page == 0 {
 			page = len(embeds) - 1
 		} else {
@@ -126,7 +126,7 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 		}
 	})
 
-	next := ctx.AddButtonHandler(msg.ID, ctx.User.ID, "next", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
+	next := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "next", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		if page >= len(embeds)-1 {
 			page = 0
 		} else {
@@ -144,7 +144,7 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 		}
 	})
 
-	first := ctx.AddButtonHandler(msg.ID, ctx.User.ID, "first", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
+	first := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "first", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		page = 0
 
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
@@ -158,7 +158,7 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 		}
 	})
 
-	last := ctx.AddButtonHandler(msg.ID, ctx.User.ID, "last", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
+	last := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "last", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		page = len(embeds) - 1
 
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
@@ -174,7 +174,7 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 
 	var o sync.Once
 
-	cross := ctx.AddButtonHandler(msg.ID, ctx.User.ID, "cross", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
+	cross := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "cross", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
 			Type: api.UpdateMessage,
 			Data: &api.InteractionResponseData{

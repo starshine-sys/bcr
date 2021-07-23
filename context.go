@@ -171,3 +171,15 @@ func (ctx *Context) Thread() bool {
 func (ctx *Context) Session() *state.State {
 	return ctx.State
 }
+
+// GetGuild ...
+func (ctx *Context) GetGuild() *discord.Guild { return ctx.Guild }
+
+// GetChannel ...
+func (ctx *Context) GetChannel() *discord.Channel { return ctx.Channel }
+
+// GetParentChannel ...
+func (ctx *Context) GetParentChannel() *discord.Channel { return ctx.ParentChannel }
+
+// User ...
+func (ctx *Context) User() discord.User { return ctx.Author }

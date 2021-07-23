@@ -28,6 +28,14 @@ type Contexter interface {
 
 	// Session returns this context's *state.State
 	Session() *state.State
+	// User returns this context's Author
+	User() discord.User
+	// GetGuild returns this context's Guild
+	GetGuild() *discord.Guild
+	// GetChannel returns this context's Channel
+	GetChannel() *discord.Channel
+	// GetParentChannel returns this context's ParentChannel
+	GetParentChannel() *discord.Channel
 
 	// ButtonPages paginates a slice of embeds using buttons
 	ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error)
@@ -49,7 +57,7 @@ type SlashContext struct {
 	State   *state.State
 	Guild   *discord.Guild
 
-	User   discord.User
+	Author discord.User
 	Member *discord.Member
 
 	Channel       *discord.Channel
@@ -89,9 +97,9 @@ func (r *Router) NewSlashContext(ic *gateway.InteractionCreateEvent) (*SlashCont
 
 	if ic.Member != nil {
 		sc.Member = ic.Member
-		sc.User = ic.Member.User
+		sc.Author = ic.Member.User
 	} else {
-		sc.User = *ic.User
+		sc.Author = *ic.User
 	}
 
 	state, _ := r.StateFromGuildID(ic.GuildID)
@@ -229,3 +237,15 @@ func (ctx *SlashContext) EditOriginal(data webhook.EditMessageData) (*discord.Me
 		api.EndpointWebhooks+ctx.Router.Bot.ID.String()+"/"+ctx.InteractionToken+"/messages/@original")
 
 }
+
+// GetGuild ...
+func (ctx *SlashContext) GetGuild() *discord.Guild { return ctx.Guild }
+
+// GetChannel ...
+func (ctx *SlashContext) GetChannel() *discord.Channel { return ctx.Channel }
+
+// GetParentChannel ...
+func (ctx *SlashContext) GetParentChannel() *discord.Channel { return ctx.ParentChannel }
+
+// User ...
+func (ctx *SlashContext) User() discord.User { return ctx.Author }
