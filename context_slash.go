@@ -1,10 +1,13 @@
 package bcr
 
 import (
-	"errors"
 	"fmt"
+	"time"
+
+	"emperror.dev/errors"
 
 	"github.com/diamondburned/arikawa/v3/api"
+	"github.com/diamondburned/arikawa/v3/api/webhook"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
@@ -25,6 +28,9 @@ type Contexter interface {
 
 	// Session returns this context's *state.State
 	Session() *state.State
+
+	// ButtonPages paginates a slice of embeds using buttons
+	ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error)
 }
 
 var _ Contexter = (*SlashContext)(nil)
@@ -189,4 +195,37 @@ func (ctx *SlashContext) SendEphemeral(content string, embeds ...discord.Embed) 
 
 	err = ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, data)
 	return
+}
+
+// Original returns the original response to an interaction, if any.
+func (ctx *SlashContext) Original() (msg *discord.Message, err error) {
+	url := api.EndpointWebhooks + ctx.Router.Bot.ID.String() + "/" + ctx.InteractionToken + "/messages/@original"
+
+	return msg, ctx.State.RequestJSON(&msg, "GET", url)
+}
+
+// EditOriginal edits the original response.
+// This is yoinked from arikawa/v3/api/webhook because that doesn't accept @original as a message ID.
+func (ctx *SlashContext) EditOriginal(data webhook.EditMessageData) (*discord.Message, error) {
+	if data.AllowedMentions != nil {
+		if err := data.AllowedMentions.Verify(); err != nil {
+			return nil, errors.Wrap(err, "allowedMentions error")
+		}
+	}
+	if data.Embeds != nil {
+		sum := 0
+		for _, e := range *data.Embeds {
+			if err := e.Validate(); err != nil {
+				return nil, errors.Wrap(err, "embed error")
+			}
+			sum += e.Length()
+			if sum > 6000 {
+				return nil, &discord.OverboundError{Count: sum, Max: 6000, Thing: "sum of text in embeds"}
+			}
+		}
+	}
+	var msg *discord.Message
+	return msg, sendpart.PATCH(ctx.State.Client.Client, data, &msg,
+		api.EndpointWebhooks+ctx.Router.Bot.ID.String()+"/"+ctx.InteractionToken+"/messages/@original")
+
 }

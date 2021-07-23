@@ -43,12 +43,14 @@ type Router struct {
 	cmdMu     sync.RWMutex
 
 	// maps + mutexes
-	reactions  map[reactionKey]reactionInfo
-	reactionMu sync.RWMutex
-	messages   map[messageKey]messageInfo
-	messageMu  sync.RWMutex
-	buttons    map[buttonKey]buttonInfo
-	buttonMu   sync.RWMutex
+	reactions     map[reactionKey]reactionInfo
+	reactionMu    sync.RWMutex
+	messages      map[messageKey]messageInfo
+	messageMu     sync.RWMutex
+	buttons       map[buttonKey]buttonInfo
+	buttonMu      sync.RWMutex
+	slashButtons  map[buttonKey]slashButtonInfo
+	slashButtonMu sync.RWMutex
 }
 
 // New creates a new router object
@@ -67,11 +69,12 @@ func New(s *shard.Manager, owners, prefixes []string) *Router {
 
 		ReactTimeout: 15 * time.Minute,
 
-		cmds:      make(map[string]*Command),
-		reactions: make(map[reactionKey]reactionInfo),
-		messages:  make(map[messageKey]messageInfo),
-		buttons:   make(map[buttonKey]buttonInfo),
-		cooldowns: newCooldownCache(),
+		cmds:         make(map[string]*Command),
+		reactions:    make(map[reactionKey]reactionInfo),
+		messages:     make(map[messageKey]messageInfo),
+		buttons:      make(map[buttonKey]buttonInfo),
+		slashButtons: make(map[buttonKey]slashButtonInfo),
+		cooldowns:    newCooldownCache(),
 	}
 
 	// set prefixer

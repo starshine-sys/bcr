@@ -182,6 +182,10 @@ func (ctx *Context) AddButtonHandler(
 
 // ButtonHandler handles buttons added by ctx.AddButtonHandler
 func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
+	if ev.Type != gateway.ButtonInteraction {
+		return
+	}
+
 	if ev.Message == nil ||
 		(ev.Member == nil && ev.User == nil) ||
 		ev.Data == nil {
@@ -203,6 +207,7 @@ func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
 	r.buttonMu.RUnlock()
 
 	if !ok {
+		r.slashButton(ev, user)
 		return
 	}
 
@@ -212,6 +217,24 @@ func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
 		r.buttonMu.Lock()
 		delete(r.buttons, buttonKey{ev.Message.ID, user, ev.Data.CustomID})
 		r.buttonMu.Unlock()
+	}
+}
+
+func (r *Router) slashButton(ev *gateway.InteractionCreateEvent, user discord.UserID) {
+	r.slashButtonMu.RLock()
+	info, ok := r.slashButtons[buttonKey{ev.Message.ID, user, ev.Data.CustomID}]
+	r.slashButtonMu.RUnlock()
+
+	if !ok {
+		return
+	}
+
+	info.fn(info.ctx, ev)
+
+	if info.delete {
+		r.slashButtonMu.Lock()
+		delete(r.slashButtons, buttonKey{ev.Message.ID, user, ev.Data.CustomID})
+		r.slashButtonMu.Unlock()
 	}
 }
 
