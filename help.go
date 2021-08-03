@@ -1,6 +1,7 @@
 package bcr
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 
@@ -85,6 +86,7 @@ func (ctx *Context) Help(path []string) (err error) {
 	}
 
 	usage := strings.Join(title, " ")
+	flagDesc := ""
 
 	if fs != nil {
 		usage += " "
@@ -94,12 +96,29 @@ func (ctx *Context) Help(path []string) (err error) {
 				s += " " + f.Value.Type()
 			}
 
-			usage += "[" + s + "] "
+			usage += " [" + s + "]"
 		})
+
+		fs.VisitAll(func(f *pflag.Flag) {
+			flagDesc += fmt.Sprintf("`-%v, --%v`: %v\n", f.Shorthand, f.Name, f.Usage)
+		})
+
+		flagDesc += "\n\nSquare brackets (`[]`) denote that an argument is **optional**.\nTo input an argument with spaces, wrap it in quotes (`\"\"`); to add quotes, escape them with a backslash (`\\`)."
+	} else if cmd.stdFlags != nil {
+		_, sfs := cmd.stdFlags(ctx, flag.NewFlagSet("", flag.ContinueOnError))
+
+		sfs.VisitAll(func(f *flag.Flag) {
+			s := fmt.Sprintf(" [-%v]", f.Name)
+
+			usage += s
+			flagDesc += fmt.Sprintf("`-%v`: %v\n", f.Name, f.Usage)
+		})
+
+		flagDesc += "\n\nSquare brackets (`[]`) denote that an argument is **optional**.\nTo input an argument with spaces, wrap it in quotes (`\"\"`); to add quotes, escape them with a backslash (`\\`)."
 	}
 
 	if cmd.Usage != "" {
-		usage += cmd.Usage
+		usage += " " + cmd.Usage
 	}
 
 	fields = append(fields, discord.EmbedField{
@@ -107,18 +126,10 @@ func (ctx *Context) Help(path []string) (err error) {
 		Value: "`" + strings.TrimSpace(usage) + "`",
 	})
 
-	if fs != nil {
-		var desc string
-
-		fs.VisitAll(func(f *pflag.Flag) {
-			desc += fmt.Sprintf("`-%v, --%v`: %v\n", f.Shorthand, f.Name, f.Usage)
-		})
-
-		desc += "\n\nSquare brackets (`[]`) denote that an argument is **optional**.\nTo input an argument with spaces, wrap it in quotes (`\"\"`); to add quotes, escape them with a backslash (`\\`)."
-
+	if flagDesc != "" {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Flags",
-			Value: desc,
+			Value: flagDesc,
 		})
 	}
 

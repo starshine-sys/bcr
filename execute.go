@@ -2,6 +2,7 @@ package bcr
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"strings"
 	"sync"
@@ -157,6 +158,19 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 			return
 		}
 		ctx.Args = ctx.Flags.Args()
+	} else if c.stdFlags != nil {
+		// otherwise we parse stdlib flags (set if cmd.Options is not nil)
+		fs := flag.NewFlagSet("", flag.ContinueOnError)
+
+		ctx, fs = c.stdFlags(ctx, fs)
+
+		err = fs.Parse(ctx.Args)
+		if err != nil {
+			_, err = ctx.Send(":x: There was an error parsing your input. Try checking this command's help.")
+			return
+		}
+
+		ctx.Args = fs.Args()
 	}
 
 	// check arguments

@@ -1,6 +1,7 @@
 package bcr
 
 import (
+	"flag"
 	"strings"
 	"sync"
 	"time"
@@ -45,6 +46,9 @@ type Command struct {
 	// These can then be retrieved with the (*FlagSet).Get*() methods.
 	Flags func(fs *pflag.FlagSet) *pflag.FlagSet
 
+	// similar to Flags above but only used internally to mirror Options
+	stdFlags func(ctx *Context, fs *flag.FlagSet) (*Context, *flag.FlagSet)
+
 	subCmds map[string]*Command
 	subMu   sync.RWMutex
 
@@ -73,6 +77,37 @@ type Command struct {
 func (c *Command) AddSubcommand(sub *Command) *Command {
 	if c.Options != nil && c.SlashCommand == nil {
 		panic("command.Options set without command.SlashCommand being set")
+	}
+
+	if c.Options != nil {
+		c.stdFlags = func(ctx *Context, fs *flag.FlagSet) (*Context, *flag.FlagSet) {
+			for _, o := range *c.Options {
+				if o.Required {
+					continue
+				}
+
+				name := strings.ToLower(o.Name)
+
+				switch o.Type {
+				case discord.StringOption, discord.ChannelOption, discord.UserOption, discord.RoleOption, discord.MentionableOption:
+					v := fs.String(name, "", o.Description)
+					ctx.FlagMap[name] = v
+				case discord.IntegerOption:
+					v := fs.Int64(name, 0, o.Description)
+					ctx.FlagMap[name] = v
+				case discord.BooleanOption:
+					v := fs.Bool(name, false, o.Description)
+					ctx.FlagMap[name] = v
+				case discord.NumberOption:
+					v := fs.Float64(name, 0, o.Description)
+					ctx.FlagMap[name] = v
+				default:
+					ctx.Router.Logger.Error("invalid CommandOptionType set in command %v, option %v: %v", c.Name, o.Name, o.Type)
+				}
+			}
+
+			return ctx, fs
+		}
 	}
 
 	sub.id = sGen.Get()

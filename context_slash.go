@@ -19,6 +19,8 @@ import (
 // This includes basic methods implemented by both Context and SlashContext; for all of their respective methods and fields, convert the Contexter to a Context or SlashContext.
 // As SlashCommand will be called with a basic *Context if Command is nil, this allows for some code deduplication if the command only uses basic methods.
 type Contexter interface {
+	Flags
+
 	// SendX sends a message without returning the created discord.Message
 	SendX(string, ...discord.Embed) error
 	SendfX(string, ...interface{}) error
