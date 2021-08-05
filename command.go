@@ -79,7 +79,7 @@ func (c *Command) AddSubcommand(sub *Command) *Command {
 		panic("command.Options set without command.SlashCommand being set")
 	}
 
-	if c.Options != nil {
+	if c.Options != nil && c.Command == nil {
 		c.stdFlags = func(ctx *Context, fs *flag.FlagSet) (*Context, *flag.FlagSet) {
 			for _, o := range *c.Options {
 				if o.Required {
