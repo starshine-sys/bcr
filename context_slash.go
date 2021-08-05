@@ -25,8 +25,15 @@ type Contexter interface {
 	SendX(string, ...discord.Embed) error
 	SendfX(string, ...interface{}) error
 
+	// Send sends a message, returning the created message.
+	Send(string, ...discord.Embed) (*discord.Message, error)
+	Sendf(string, ...interface{}) (*discord.Message, error)
+
 	// SendFiles sends a message with attachments
 	SendFiles(string, ...sendpart.File) error
+
+	// SendEphemeral sends an ephemeral message (or falls back to a normal message without slash commands)
+	SendEphemeral(string, ...discord.Embed) error
 
 	// Session returns this context's *state.State
 	Session() *state.State
@@ -251,3 +258,23 @@ func (ctx *SlashContext) GetParentChannel() *discord.Channel { return ctx.Parent
 
 // User ...
 func (ctx *SlashContext) User() discord.User { return ctx.Author }
+
+// Send ...
+func (ctx *SlashContext) Send(content string, embeds ...discord.Embed) (msg *discord.Message, err error) {
+	err = ctx.SendX(content, embeds...)
+	if err != nil {
+		return
+	}
+
+	return ctx.Original()
+}
+
+// Sendf ...
+func (ctx *SlashContext) Sendf(tmpl string, args ...interface{}) (msg *discord.Message, err error) {
+	err = ctx.SendfX(tmpl, args...)
+	if err != nil {
+		return
+	}
+
+	return ctx.Original()
+}

@@ -65,3 +65,9 @@ func (ctx *Context) SendFiles(content string, files ...sendpart.File) (err error
 func (ctx *Context) SendfX(format string, args ...interface{}) (err error) {
 	return ctx.SendX(fmt.Sprintf(format, args...))
 }
+
+// SendEphemeral ...
+func (ctx *Context) SendEphemeral(content string, embeds ...discord.Embed) (err error) {
+	_, err = ctx.Send(content, embeds...)
+	return
+}
