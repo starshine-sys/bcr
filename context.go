@@ -206,5 +206,5 @@ func (ctx *Context) EditOriginal(data api.EditInteractionResponseData) (*discord
 		Attachments:     data.Attachments,
 	}
 
-	return ctx.State.EditMessageComplex(ctx.origMessage.ChannelID, ctx.origMessage.Reference.MessageID, emd)
+	return ctx.State.EditMessageComplex(ctx.origMessage.ChannelID, ctx.origMessage.ID, emd)
 }
