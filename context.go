@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/bot/extras/shellwords"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
@@ -79,6 +80,8 @@ type Context struct {
 	// Internal use for the Get* methods.
 	// Not intended to be changed by the end user, exported so it can be created if context is not made through NewContext.
 	FlagMap map[string]interface{}
+
+	origMessage *discord.Message
 }
 
 // NewContext returns a new message context
@@ -134,7 +137,7 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 	}
 
 	if ctx.Thread() {
-		ctx.ParentChannel, err = ctx.State.Channel(ctx.Channel.CategoryID)
+		ctx.ParentChannel, err = ctx.State.Channel(ctx.Channel.ParentID)
 		if err != nil {
 			return ctx, ErrChannel
 		}
@@ -188,3 +191,20 @@ func (ctx *Context) GetParentChannel() *discord.Channel { return ctx.ParentChann
 
 // User ...
 func (ctx *Context) User() discord.User { return ctx.Author }
+
+// EditOriginal edits the original response message.
+func (ctx *Context) EditOriginal(data api.EditInteractionResponseData) (*discord.Message, error) {
+	if ctx.origMessage == nil {
+		return nil, errors.New("no original message to edit")
+	}
+
+	emd := api.EditMessageData{
+		Content:         data.Content,
+		Embeds:          data.Embeds,
+		Components:      data.Components,
+		AllowedMentions: data.AllowedMentions,
+		Attachments:     data.Attachments,
+	}
+
+	return ctx.State.EditMessageComplex(ctx.origMessage.ChannelID, ctx.origMessage.Reference.MessageID, emd)
+}

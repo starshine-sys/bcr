@@ -16,17 +16,28 @@ var (
 
 // SendX sends a message without returning the created discord.Message
 func (ctx *Context) SendX(content string, embeds ...discord.Embed) (err error) {
-	_, err = ctx.Send(content, embeds...)
+	msg, err := ctx.Send(content, embeds...)
+	if err != nil {
+		return
+	}
+
+	ctx.origMessage = msg
 	return
 }
 
 // Send sends a message to the context channel
 func (ctx *Context) Send(content string, embeds ...discord.Embed) (m *discord.Message, err error) {
-	return ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
+	m, err = ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
 		Content:         content,
 		Embeds:          embeds,
 		AllowedMentions: ctx.Router.DefaultMentions,
 	})
+	if err != nil {
+		return
+	}
+
+	ctx.origMessage = m
+	return
 }
 
 // Sendf sends a message with Printf-like syntax
@@ -53,11 +64,16 @@ func (ctx *Context) Replyc(colour discord.Color, template string, args ...interf
 
 // SendFiles sends a message with attachments
 func (ctx *Context) SendFiles(content string, files ...sendpart.File) (err error) {
-	_, err = ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
+	msg, err := ctx.State.SendMessageComplex(ctx.Channel.ID, api.SendMessageData{
 		Content:         content,
 		Files:           files,
 		AllowedMentions: ctx.Router.DefaultMentions,
 	})
+	if err != nil {
+		return
+	}
+
+	ctx.origMessage = msg
 	return
 }
 

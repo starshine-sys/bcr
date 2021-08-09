@@ -28,7 +28,7 @@ var (
 
 		{discord.PermissionManageRoles, "Manage Roles"},
 		{discord.PermissionManageNicknames, "Manage Nicknames"},
-		{discord.PermissionManageEmojis, "Manage Emojis"},
+		{discord.PermissionManageEmojisAndStickers, "Manage Emojis and Stickers"},
 		{discord.PermissionManageMessages, "Manage Messages"},
 
 		{discord.PermissionMentionEveryone, "Mention Everyone"},

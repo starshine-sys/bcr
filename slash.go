@@ -3,7 +3,6 @@ package bcr
 import (
 	"strings"
 
-	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
@@ -20,9 +19,9 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 	}
 	r.cmdMu.Unlock()
 
-	slashCmds := []api.CreateCommandData{}
+	slashCmds := []discord.Command{}
 	for _, cmd := range cmds {
-		slashCmds = append(slashCmds, api.CreateCommandData{
+		slashCmds = append(slashCmds, discord.Command{
 			Name:        strings.ToLower(cmd.Name),
 			Description: cmd.Summary,
 			Options:     *cmd.Options,
@@ -35,7 +34,7 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 	return r.syncCommandsGlobal(slashCmds)
 }
 
-func (r *Router) syncCommandsGlobal(cmds []api.CreateCommandData) (err error) {
+func (r *Router) syncCommandsGlobal(cmds []discord.Command) (err error) {
 	appID := discord.AppID(r.Bot.ID)
 	s, _ := r.StateFromGuildID(0)
 
@@ -58,17 +57,11 @@ func (r *Router) syncCommandsGlobal(cmds []api.CreateCommandData) (err error) {
 		}
 	}
 
-	for _, cmd := range cmds {
-		_, err = s.CreateCommand(appID, cmd)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	_, err = s.BulkOverwriteCommands(appID, cmds)
+	return
 }
 
-func in(cmds []api.CreateCommandData, name string) bool {
+func in(cmds []discord.Command, name string) bool {
 	for _, cmd := range cmds {
 		if cmd.Name == name {
 			return true
@@ -77,7 +70,7 @@ func in(cmds []api.CreateCommandData, name string) bool {
 	return false
 }
 
-func (r *Router) syncCommandsIn(cmds []api.CreateCommandData, guildIDs []discord.GuildID) (err error) {
+func (r *Router) syncCommandsIn(cmds []discord.Command, guildIDs []discord.GuildID) (err error) {
 	appID := discord.AppID(r.Bot.ID)
 
 	for _, guild := range guildIDs {
@@ -102,11 +95,9 @@ func (r *Router) syncCommandsIn(cmds []api.CreateCommandData, guildIDs []discord
 			}
 		}
 
-		for _, cmd := range cmds {
-			_, err = s.CreateGuildCommand(appID, guild, cmd)
-			if err != nil {
-				return err
-			}
+		_, err = s.BulkOverwriteGuildCommands(appID, guild, cmds)
+		if err != nil {
+			return err
 		}
 	}
 
