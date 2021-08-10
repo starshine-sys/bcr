@@ -46,9 +46,12 @@ type Contexter interface {
 	GetChannel() *discord.Channel
 	// GetParentChannel returns this context's ParentChannel
 	GetParentChannel() *discord.Channel
+	// GetMember returns this context's Member
+	GetMember() *discord.Member
 
 	// ButtonPages paginates a slice of embeds using buttons
 	ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error)
+	ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components []discord.Component) (msg *discord.Message, rmFunc func(), err error)
 }
 
 var _ Contexter = (*SlashContext)(nil)
@@ -239,6 +242,9 @@ func (ctx *SlashContext) GetParentChannel() *discord.Channel { return ctx.Parent
 // User ...
 func (ctx *SlashContext) User() discord.User { return ctx.Author }
 
+// GetMember ...
+func (ctx *SlashContext) GetMember() *discord.Member { return ctx.Member }
+
 // Send ...
 func (ctx *SlashContext) Send(content string, embeds ...discord.Embed) (msg *discord.Message, err error) {
 	err = ctx.SendX(content, embeds...)
@@ -257,4 +263,31 @@ func (ctx *SlashContext) Sendf(tmpl string, args ...interface{}) (msg *discord.M
 	}
 
 	return ctx.Original()
+}
+
+// GuildPerms returns the global (guild) permissions of this Context's user.
+// If in DMs, it will return the permissions users have in DMs.
+func (ctx *SlashContext) GuildPerms() (perms discord.Permissions) {
+	if ctx.Guild == nil || ctx.Member == nil {
+		return discord.PermissionViewChannel | discord.PermissionSendMessages | discord.PermissionAddReactions | discord.PermissionReadMessageHistory
+	}
+
+	if ctx.Guild.OwnerID == ctx.Author.ID {
+		return discord.PermissionAll
+	}
+
+	for _, id := range ctx.Member.RoleIDs {
+		for _, r := range ctx.Guild.Roles {
+			if id == r.ID {
+				if r.Permissions.Has(discord.PermissionAdministrator) {
+					return discord.PermissionAll
+				}
+
+				perms |= r.Permissions
+				break
+			}
+		}
+	}
+
+	return perms
 }

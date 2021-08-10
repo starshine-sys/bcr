@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/starshine-sys/snowflake/v2"
 )
 
 // SyncCommands syncs slash commands in the given guilds.
@@ -13,7 +14,7 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 	r.cmdMu.Lock()
 	cmds := []*Command{}
 	for _, cmd := range r.cmds {
-		if cmd.Options != nil {
+		if cmd.Options != nil && !inCmds(cmds, cmd.id) {
 			cmds = append(cmds, cmd)
 		}
 	}
@@ -32,6 +33,15 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 		return r.syncCommandsIn(slashCmds, guildIDs)
 	}
 	return r.syncCommandsGlobal(slashCmds)
+}
+
+func inCmds(cmds []*Command, id snowflake.ID) bool {
+	for _, cmd := range cmds {
+		if cmd.id == id {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *Router) syncCommandsGlobal(cmds []discord.Command) (err error) {

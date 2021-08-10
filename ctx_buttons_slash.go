@@ -39,6 +39,11 @@ func (ctx *SlashContext) AddButtonHandler(
 
 // ButtonPages is like PagedEmbed but uses buttons instead of reactions.
 func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error) {
+	return ctx.ButtonPagesWithComponents(embeds, timeout, nil)
+}
+
+// ButtonPagesWithComponents is like ButtonPages but adds the given components before the buttons used for pagination.
+func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components []discord.Component) (msg *discord.Message, rmFunc func(), err error) {
 	rmFunc = func() {}
 
 	if len(embeds) == 0 {
@@ -55,49 +60,51 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 		return
 	}
 
+	components = append(components, discord.ActionRowComponent{
+		Components: []discord.Component{
+			discord.ButtonComponent{
+				Emoji: &discord.ButtonEmoji{
+					Name: "⏪",
+				},
+				Style:    discord.SecondaryButton,
+				CustomID: "first",
+			},
+			discord.ButtonComponent{
+				Emoji: &discord.ButtonEmoji{
+					Name: "⬅️",
+				},
+				Style:    discord.SecondaryButton,
+				CustomID: "prev",
+			},
+			discord.ButtonComponent{
+				Emoji: &discord.ButtonEmoji{
+					Name: "➡️",
+				},
+				Style:    discord.SecondaryButton,
+				CustomID: "next",
+			},
+			discord.ButtonComponent{
+				Emoji: &discord.ButtonEmoji{
+					Name: "⏩",
+				},
+				Style:    discord.SecondaryButton,
+				CustomID: "last",
+			},
+			discord.ButtonComponent{
+				Emoji: &discord.ButtonEmoji{
+					Name: "❌",
+				},
+				Style:    discord.SecondaryButton,
+				CustomID: "cross",
+			},
+		},
+	})
+
 	err = ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
 		Type: api.MessageInteractionWithSource,
 		Data: &api.InteractionResponseData{
-			Embeds: &[]discord.Embed{embeds[0]},
-			Components: &[]discord.Component{discord.ActionRowComponent{
-				Components: []discord.Component{
-					discord.ButtonComponent{
-						Emoji: &discord.ButtonEmoji{
-							Name: "⏪",
-						},
-						Style:    discord.SecondaryButton,
-						CustomID: "first",
-					},
-					discord.ButtonComponent{
-						Emoji: &discord.ButtonEmoji{
-							Name: "⬅️",
-						},
-						Style:    discord.SecondaryButton,
-						CustomID: "prev",
-					},
-					discord.ButtonComponent{
-						Emoji: &discord.ButtonEmoji{
-							Name: "➡️",
-						},
-						Style:    discord.SecondaryButton,
-						CustomID: "next",
-					},
-					discord.ButtonComponent{
-						Emoji: &discord.ButtonEmoji{
-							Name: "⏩",
-						},
-						Style:    discord.SecondaryButton,
-						CustomID: "last",
-					},
-					discord.ButtonComponent{
-						Emoji: &discord.ButtonEmoji{
-							Name: "❌",
-						},
-						Style:    discord.SecondaryButton,
-						CustomID: "cross",
-					},
-				},
-			}},
+			Embeds:     &[]discord.Embed{embeds[0]},
+			Components: &components,
 		},
 	})
 	if err != nil {

@@ -192,6 +192,9 @@ func (ctx *Context) GetParentChannel() *discord.Channel { return ctx.ParentChann
 // User ...
 func (ctx *Context) User() discord.User { return ctx.Author }
 
+// GetMember ...
+func (ctx *Context) GetMember() *discord.Member { return ctx.Member }
+
 // EditOriginal edits the original response message.
 func (ctx *Context) EditOriginal(data api.EditInteractionResponseData) (*discord.Message, error) {
 	if ctx.origMessage == nil {

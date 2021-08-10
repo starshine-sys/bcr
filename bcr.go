@@ -32,7 +32,7 @@ type Router struct {
 	Bot          *discord.User
 	Logger       *Logger
 
-	BlacklistFunc   func(*Context) bool
+	BlacklistFunc   func(Contexter) bool
 	HelpCommand     func(*Context) error
 	DefaultMentions *api.AllowedMentions
 	EmbedColor      discord.Color

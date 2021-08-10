@@ -17,7 +17,7 @@ type CustomPerms interface {
 	String() string
 
 	// Returns true if the user has permission to run the command
-	Check(*Context) (bool, error)
+	Check(Contexter) (bool, error)
 }
 
 // Command is a single command, or a group
@@ -185,19 +185,19 @@ func (r *requireRole) String() string {
 	return r.name
 }
 
-func (r *requireRole) Check(ctx *Context) (bool, error) {
+func (r *requireRole) Check(ctx Contexter) (bool, error) {
 	for _, u := range r.owners {
-		if u == ctx.Author.ID {
+		if u == ctx.User().ID {
 			return true, nil
 		}
 	}
 
-	if ctx.Member == nil {
+	if ctx.GetMember() == nil {
 		return false, nil
 	}
 
 	for _, r := range r.roles {
-		for _, mr := range ctx.Member.RoleIDs {
+		for _, mr := range ctx.GetMember().RoleIDs {
 			if r == mr {
 				return true, nil
 			}
