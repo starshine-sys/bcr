@@ -1,6 +1,7 @@
 package bcr
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
+	"github.com/diamondburned/arikawa/v3/utils/json/option"
 )
 
 type slashButtonInfo struct {
@@ -226,4 +228,130 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 
 	time.AfterFunc(timeout, rmFunc)
 	return msg, rmFunc, err
+}
+
+// ConfirmButton confirms a prompt with buttons or "yes"/"no" messages.
+func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) (yes, timeout bool) {
+	if data.Message == "" && len(data.Embeds) == 0 {
+		return
+	}
+
+	if data.YesPrompt == "" {
+		data.YesPrompt = "Confirm"
+	}
+	if data.YesStyle == 0 {
+		data.YesStyle = discord.PrimaryButton
+	}
+	if data.NoPrompt == "" {
+		data.NoPrompt = "Cancel"
+	}
+	if data.NoStyle == 0 {
+		data.NoStyle = discord.SecondaryButton
+	}
+	if data.Timeout == 0 {
+		data.Timeout = time.Minute
+	}
+
+	con, cancel := context.WithTimeout(context.Background(), data.Timeout)
+	defer cancel()
+
+	err := ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
+		Data: &api.InteractionResponseData{
+			Content: option.NewNullableString(data.Message),
+			Embeds:  &data.Embeds,
+
+			Components: &[]discord.Component{
+				discord.ActionRowComponent{
+					Components: []discord.Component{
+						discord.ButtonComponent{
+							Label:    data.YesPrompt,
+							Style:    data.YesStyle,
+							CustomID: "yes",
+						},
+						discord.ButtonComponent{
+							Label:    data.NoPrompt,
+							Style:    data.NoStyle,
+							CustomID: "no",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	msg, err := ctx.Original()
+	if err != nil {
+		return
+	}
+
+	v := ctx.State.WaitFor(con, func(ev interface{}) bool {
+		v, ok := ev.(*gateway.InteractionCreateEvent)
+		if !ok {
+			return false
+		}
+
+		if v.Message == nil || (v.Member == nil && v.User == nil) {
+			return false
+		}
+
+		if v.Message.ID != msg.ID {
+			return false
+		}
+
+		var uID discord.UserID
+		if v.Member != nil {
+			uID = v.Member.User.ID
+		} else {
+			uID = v.User.ID
+		}
+
+		if uID != userID {
+			return false
+		}
+
+		if v.Data.CustomID == "" {
+			return false
+		}
+
+		yes = v.Data.CustomID == "yes"
+		timeout = false
+		return true
+	})
+
+	if v == nil {
+		return false, true
+	}
+
+	upd := &[]discord.Component{
+		discord.ActionRowComponent{
+			Components: []discord.Component{
+				discord.ButtonComponent{
+					Label:    data.YesPrompt,
+					Style:    data.YesStyle,
+					CustomID: "yes",
+					Disabled: true,
+				},
+				discord.ButtonComponent{
+					Label:    data.NoPrompt,
+					Style:    data.NoStyle,
+					CustomID: "no",
+					Disabled: true,
+				},
+			},
+		},
+	}
+
+	if ev, ok := v.(*gateway.InteractionCreateEvent); ok {
+		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
+			Type: api.UpdateMessage,
+			Data: &api.InteractionResponseData{
+				Components: upd,
+			},
+		})
+	}
+
+	return
 }

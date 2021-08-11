@@ -54,6 +54,9 @@ type Contexter interface {
 	// ButtonPages paginates a slice of embeds using buttons
 	ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error)
 	ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components []discord.Component) (msg *discord.Message, rmFunc func(), err error)
+
+	// ConfirmButton confirms a prompt with buttons or "yes"/"no" messages.
+	ConfirmButton(userID discord.UserID, data ConfirmData) (yes, timeout bool)
 }
 
 var _ Contexter = (*SlashContext)(nil)

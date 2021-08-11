@@ -134,12 +134,40 @@ func (ctx *Context) ConfirmButton(userID discord.UserID, data ConfirmData) (yes,
 		return false
 	})
 
+	upd := &[]discord.Component{
+		discord.ActionRowComponent{
+			Components: []discord.Component{
+				discord.ButtonComponent{
+					Label:    data.YesPrompt,
+					Style:    data.YesStyle,
+					CustomID: "yes",
+					Disabled: true,
+				},
+				discord.ButtonComponent{
+					Label:    data.NoPrompt,
+					Style:    data.NoStyle,
+					CustomID: "no",
+					Disabled: true,
+				},
+			},
+		},
+	}
+
 	ctx.State.EditMessageComplex(msg.ChannelID, msg.ID, api.EditMessageData{
-		Components: &[]discord.Component{},
+		Components: upd,
 	})
 
 	if v == nil {
 		return false, true
+	}
+
+	if ev, ok := v.(*gateway.InteractionCreateEvent); ok {
+		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
+			Type: api.UpdateMessage,
+			Data: &api.InteractionResponseData{
+				Components: upd,
+			},
+		})
 	}
 
 	return
