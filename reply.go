@@ -87,3 +87,13 @@ func (ctx *Context) SendEphemeral(content string, embeds ...discord.Embed) (err 
 	_, err = ctx.Send(content, embeds...)
 	return
 }
+
+// SendComponents sends a message with components
+func (ctx *Context) SendComponents(components []discord.Component, content string, embeds ...discord.Embed) (*discord.Message, error) {
+	return ctx.State.SendMessageComplex(ctx.Message.ChannelID, api.SendMessageData{
+		Content:         content,
+		Embeds:          embeds,
+		Components:      components,
+		AllowedMentions: ctx.Router.DefaultMentions,
+	})
+}

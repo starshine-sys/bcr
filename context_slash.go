@@ -28,6 +28,8 @@ type Contexter interface {
 	Send(string, ...discord.Embed) (*discord.Message, error)
 	Sendf(string, ...interface{}) (*discord.Message, error)
 
+	SendComponents([]discord.Component, string, ...discord.Embed) (*discord.Message, error)
+
 	// SendFiles sends a message with attachments
 	SendFiles(string, ...sendpart.File) error
 
@@ -78,6 +80,8 @@ type SlashContext struct {
 
 	// Event is the original raw event
 	Event *gateway.InteractionCreateEvent
+
+	AdditionalParams map[string]interface{}
 }
 
 // Session returns this SlashContext's state.
@@ -106,6 +110,7 @@ func (r *Router) NewSlashContext(ic *gateway.InteractionCreateEvent) (*SlashCont
 		CommandOptions:   ic.Data.Options,
 		InteractionID:    ic.ID,
 		InteractionToken: ic.Token,
+		AdditionalParams: map[string]interface{}{},
 	}
 
 	if ic.Member != nil {
@@ -290,4 +295,24 @@ func (ctx *SlashContext) GuildPerms() (perms discord.Permissions) {
 	}
 
 	return perms
+}
+
+// SendComponents sends a message with components
+func (ctx *SlashContext) SendComponents(components []discord.Component, content string, embeds ...discord.Embed) (*discord.Message, error) {
+	data := api.InteractionResponse{
+		Type: api.MessageInteractionWithSource,
+		Data: &api.InteractionResponseData{
+			AllowedMentions: ctx.Router.DefaultMentions,
+			Content:         option.NewNullableString(content),
+			Embeds:          &embeds,
+			Components:      &components,
+		},
+	}
+
+	err := ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return ctx.Original()
 }

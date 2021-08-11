@@ -50,8 +50,16 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 		return nil, func() {}, errors.New("no embeds")
 	}
 
+	ctx.AdditionalParams["page"] = 0
+
 	if len(embeds) == 1 {
-		err = ctx.SendX("", embeds[0])
+		err = ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
+			Type: api.MessageInteractionWithSource,
+			Data: &api.InteractionResponseData{
+				Embeds:     &[]discord.Embed{embeds[0]},
+				Components: &components,
+			},
+		})
 		if err != nil {
 			return
 		}
@@ -118,8 +126,10 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 	prev := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "prev", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		if page == 0 {
 			page = len(embeds) - 1
+			ctx.AdditionalParams["page"] = len(embeds) - 1
 		} else {
 			page--
+			ctx.AdditionalParams["page"] = page
 		}
 
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
@@ -136,8 +146,10 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 	next := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "next", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		if page >= len(embeds)-1 {
 			page = 0
+			ctx.AdditionalParams["page"] = 0
 		} else {
 			page++
+			ctx.AdditionalParams["page"] = page
 		}
 
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
@@ -153,6 +165,7 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 
 	first := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "first", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		page = 0
+		ctx.AdditionalParams["page"] = 0
 
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
 			Type: api.UpdateMessage,
@@ -167,6 +180,7 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 
 	last := ctx.AddButtonHandler(msg.ID, ctx.Author.ID, "last", false, func(ctx *SlashContext, ev *gateway.InteractionCreateEvent) {
 		page = len(embeds) - 1
+		ctx.AdditionalParams["page"] = len(embeds) - 1
 
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
 			Type: api.UpdateMessage,
