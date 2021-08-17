@@ -45,7 +45,7 @@ func (ctx *Context) PagedEmbedTimeout(embeds []discord.Embed, extendedReactions 
 	// add :x: handler
 	ctx.AddReactionHandlerWithTimeout(msg.ID, ctx.Author.ID, "❌", true, false, timeout, func(*Context) {
 		// timer.Stop()
-		err = ctx.State.DeleteMessage(ctx.Channel.ID, msg.ID)
+		err = ctx.State.DeleteMessage(ctx.Channel.ID, msg.ID, "")
 		if err != nil {
 			ctx.Router.Logger.Error("deleting message: %v", err)
 		}
