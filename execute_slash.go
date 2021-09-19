@@ -29,7 +29,7 @@ func (r *Router) InteractionCreate(ic *gateway.InteractionCreateEvent) {
 
 // ExecuteSlash executes slash commands. Only one layer for now, so no subcommands, sorry :(
 func (r *Router) ExecuteSlash(ctx *SlashContext) (err error) {
-	err = r.executeSlash(ctx, r.cmds, &r.cmdMu)
+	err = r.executeSlash(true, ctx, r.cmds, &r.cmdMu)
 	if err == errCommandRun {
 		return nil
 	}
@@ -43,7 +43,29 @@ func errCommand(err error) error {
 	return err
 }
 
-func (r *Router) executeSlash(ctx *SlashContext, cmds map[string]*Command, mu *sync.RWMutex) (err error) {
+func (r *Router) executeSlash(isTopLevel bool, ctx *SlashContext, cmds map[string]*Command, mu *sync.RWMutex) (err error) {
+	// first, check subcommands
+	if len(ctx.CommandOptions) > 0 && isTopLevel {
+		for _, g := range r.slashGroups {
+			if strings.EqualFold(g.Name, ctx.CommandName) {
+				nctx := &SlashContext{}
+				*nctx = *ctx
+				nctx.CommandName = ctx.CommandOptions[0].Name
+				nctx.CommandOptions = ctx.CommandOptions[0].Options
+
+				// convert subcommands slice to a map
+				m := map[string]*Command{}
+				for _, cmd := range g.Subcommands {
+					m[strings.ToLower(cmd.Name)] = cmd
+				}
+				var nmu sync.RWMutex // this doesn't matter so we just create a new one
+
+				return r.executeSlash(false, nctx, m, &nmu)
+			}
+		}
+	}
+
+	// else, we try top-level commands (or skip to this immediately if it isn't the top level)
 	mu.RLock()
 	cmd, ok := cmds[ctx.CommandName]
 	if !ok || cmd.SlashCommand == nil {

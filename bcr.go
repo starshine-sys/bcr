@@ -43,6 +43,8 @@ type Router struct {
 	cmds      map[string]*Command
 	cmdMu     sync.RWMutex
 
+	slashGroups []*Group
+
 	// maps + mutexes
 	reactions     map[reactionKey]reactionInfo
 	reactionMu    sync.RWMutex

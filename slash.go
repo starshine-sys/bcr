@@ -28,6 +28,9 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 			Options:     *cmd.Options,
 		})
 	}
+	for _, g := range r.slashGroups {
+		slashCmds = append(slashCmds, g.Command())
+	}
 
 	if len(guildIDs) > 0 {
 		return r.syncCommandsIn(slashCmds, guildIDs)

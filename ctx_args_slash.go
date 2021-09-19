@@ -16,7 +16,7 @@ type SlashCommandOption struct {
 
 // Option returns an option by name, or an empty option if it's not found.
 func (ctx *SlashContext) Option(name string) (option SlashCommandOption) {
-	for _, o := range ctx.Event.Data.Options {
+	for _, o := range ctx.CommandOptions {
 		if strings.EqualFold(o.Name, name) {
 			return SlashCommandOption{
 				ctx:               ctx,
