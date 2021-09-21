@@ -46,7 +46,7 @@ func errCommand(err error) error {
 func (r *Router) executeSlash(isTopLevel bool, ctx *SlashContext, cmds map[string]*Command, mu *sync.RWMutex) (err error) {
 	// first, check subcommands
 	if len(ctx.CommandOptions) > 0 && isTopLevel {
-		for _, g := range r.slashGroups {
+		for _, g := range r.SlashGroups {
 			if strings.EqualFold(g.Name, ctx.CommandName) {
 				nctx := &SlashContext{}
 				*nctx = *ctx

@@ -57,9 +57,9 @@ func (r *Router) AddGroup(g *Group) {
 	defer r.cmdMu.RUnlock()
 	for _, cmd := range r.cmds {
 		if strings.EqualFold(cmd.Name, g.Name) && cmd.Options != nil && cmd.SlashCommand != nil {
-			panic("slash command with name " + g.Name + "already exists!")
+			panic("slash command with name " + g.Name + " already exists!")
 		}
 	}
 
-	r.slashGroups = append(r.slashGroups, g)
+	r.SlashGroups = append(r.SlashGroups, g)
 }
