@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/diamondburned/arikawa/v3/bot/extras/shellwords"
+	"github.com/diamondburned/arikawa/v3/utils/bot/extras/shellwords"
 )
 
 // Errors related to creating aliases

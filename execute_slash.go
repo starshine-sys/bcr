@@ -11,7 +11,7 @@ import (
 
 // InteractionCreate is called when an interaction create event is received.
 func (r *Router) InteractionCreate(ic *gateway.InteractionCreateEvent) {
-	if ic.Type != gateway.CommandInteraction {
+	if ic.Type != discord.CommandInteraction {
 		return
 	}
 

@@ -65,7 +65,7 @@ var _ Contexter = (*SlashContext)(nil)
 type SlashContext struct {
 	CommandID      discord.CommandID
 	CommandName    string
-	CommandOptions []gateway.InteractionOption
+	CommandOptions []discord.InteractionOption
 
 	InteractionID    discord.InteractionID
 	InteractionToken string
@@ -83,6 +83,7 @@ type SlashContext struct {
 
 	// Event is the original raw event
 	Event *gateway.InteractionCreateEvent
+	Data  *discord.CommandInteractionData
 
 	AdditionalParams map[string]interface{}
 }
@@ -101,16 +102,19 @@ var (
 func (r *Router) NewSlashContext(ic *gateway.InteractionCreateEvent) (*SlashContext, error) {
 	var err error
 
-	if ic.Type != gateway.CommandInteraction {
+	if ic.Type != discord.CommandInteraction || ic.Data.Type() != discord.CommandInteraction {
 		return nil, ErrNotCommand
 	}
+
+	data := ic.Data.(*discord.CommandInteractionData)
 
 	sc := &SlashContext{
 		Router:           r,
 		Event:            ic,
-		CommandName:      ic.Data.Name,
-		CommandID:        ic.Data.ID,
-		CommandOptions:   ic.Data.Options,
+		Data:             data,
+		CommandName:      data.Name,
+		CommandID:        data.ID,
+		CommandOptions:   data.Options,
 		InteractionID:    ic.ID,
 		InteractionToken: ic.Token,
 		AdditionalParams: map[string]interface{}{},

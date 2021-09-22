@@ -70,37 +70,37 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 		return
 	}
 
-	components = append(components, discord.ActionRowComponent{
+	components = append(components, &discord.ActionRowComponent{
 		Components: []discord.Component{
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "⏪",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "first",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "⬅️",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "prev",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "➡️",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "next",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "⏩",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "last",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "❌",
 				},
@@ -261,14 +261,14 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 			Embeds:  &data.Embeds,
 
 			Components: &[]discord.Component{
-				discord.ActionRowComponent{
+				&discord.ActionRowComponent{
 					Components: []discord.Component{
-						discord.ButtonComponent{
+						&discord.ButtonComponent{
 							Label:    data.YesPrompt,
 							Style:    data.YesStyle,
 							CustomID: "yes",
 						},
-						discord.ButtonComponent{
+						&discord.ButtonComponent{
 							Label:    data.NoPrompt,
 							Style:    data.NoStyle,
 							CustomID: "no",
@@ -297,6 +297,11 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 			return false
 		}
 
+		if v.Data.Type() != discord.ComponentInteraction {
+			return false
+		}
+		data := v.Data.(*discord.ComponentInteractionData)
+
 		if v.Message.ID != msg.ID {
 			return false
 		}
@@ -312,11 +317,11 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 			return false
 		}
 
-		if v.Data.CustomID == "" {
+		if data.CustomID == "" {
 			return false
 		}
 
-		yes = v.Data.CustomID == "yes"
+		yes = data.CustomID == "yes"
 		timeout = false
 		return true
 	})
@@ -326,15 +331,15 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 	}
 
 	upd := &[]discord.Component{
-		discord.ActionRowComponent{
+		&discord.ActionRowComponent{
 			Components: []discord.Component{
-				discord.ButtonComponent{
+				&discord.ButtonComponent{
 					Label:    data.YesPrompt,
 					Style:    data.YesStyle,
 					CustomID: "yes",
 					Disabled: true,
 				},
-				discord.ButtonComponent{
+				&discord.ButtonComponent{
 					Label:    data.NoPrompt,
 					Style:    data.NoStyle,
 					CustomID: "no",

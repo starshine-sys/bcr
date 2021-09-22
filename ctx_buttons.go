@@ -60,14 +60,14 @@ func (ctx *Context) ConfirmButton(userID discord.UserID, data ConfirmData) (yes,
 		Embeds:  data.Embeds,
 
 		Components: []discord.Component{
-			discord.ActionRowComponent{
+			&discord.ActionRowComponent{
 				Components: []discord.Component{
-					discord.ButtonComponent{
+					&discord.ButtonComponent{
 						Label:    data.YesPrompt,
 						Style:    data.YesStyle,
 						CustomID: "yes",
 					},
-					discord.ButtonComponent{
+					&discord.ButtonComponent{
 						Label:    data.NoPrompt,
 						Style:    data.NoStyle,
 						CustomID: "no",
@@ -91,6 +91,11 @@ func (ctx *Context) ConfirmButton(userID discord.UserID, data ConfirmData) (yes,
 				return false
 			}
 
+			if v.Data.Type() != discord.ComponentInteraction {
+				return false
+			}
+			data := v.Data.(*discord.ComponentInteractionData)
+
 			var uID discord.UserID
 			if v.Member != nil {
 				uID = v.Member.User.ID
@@ -102,11 +107,11 @@ func (ctx *Context) ConfirmButton(userID discord.UserID, data ConfirmData) (yes,
 				return false
 			}
 
-			if v.Data.CustomID == "" {
+			if data.CustomID == "" {
 				return false
 			}
 
-			yes = v.Data.CustomID == "yes"
+			yes = data.CustomID == "yes"
 			timeout = false
 			return true
 		}
@@ -135,15 +140,15 @@ func (ctx *Context) ConfirmButton(userID discord.UserID, data ConfirmData) (yes,
 	})
 
 	upd := &[]discord.Component{
-		discord.ActionRowComponent{
+		&discord.ActionRowComponent{
 			Components: []discord.Component{
-				discord.ButtonComponent{
+				&discord.ButtonComponent{
 					Label:    data.YesPrompt,
 					Style:    data.YesStyle,
 					CustomID: "yes",
 					Disabled: true,
 				},
-				discord.ButtonComponent{
+				&discord.ButtonComponent{
 					Label:    data.NoPrompt,
 					Style:    data.NoStyle,
 					CustomID: "no",
@@ -210,7 +215,7 @@ func (ctx *Context) AddButtonHandler(
 
 // ButtonHandler handles buttons added by ctx.AddButtonHandler
 func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
-	if ev.Type != gateway.ButtonInteraction {
+	if ev.Type != discord.ComponentInteraction || ev.Data.Type() != discord.ComponentInteraction {
 		return
 	}
 
@@ -219,7 +224,9 @@ func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
 		ev.Data == nil {
 		return
 	}
-	if ev.Data.CustomID == "" {
+	data := ev.Data.(*discord.ComponentInteractionData)
+
+	if data.CustomID == "" {
 		return
 	}
 
@@ -231,7 +238,7 @@ func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
 	}
 
 	r.buttonMu.RLock()
-	info, ok := r.buttons[buttonKey{ev.Message.ID, user, ev.Data.CustomID}]
+	info, ok := r.buttons[buttonKey{ev.Message.ID, user, data.CustomID}]
 	r.buttonMu.RUnlock()
 
 	if !ok {
@@ -243,14 +250,19 @@ func (r *Router) ButtonHandler(ev *gateway.InteractionCreateEvent) {
 
 	if info.delete {
 		r.buttonMu.Lock()
-		delete(r.buttons, buttonKey{ev.Message.ID, user, ev.Data.CustomID})
+		delete(r.buttons, buttonKey{ev.Message.ID, user, data.CustomID})
 		r.buttonMu.Unlock()
 	}
 }
 
 func (r *Router) slashButton(ev *gateway.InteractionCreateEvent, user discord.UserID) {
+	data, ok := ev.Data.(*discord.ComponentInteractionData)
+	if !ok {
+		return
+	}
+
 	r.slashButtonMu.RLock()
-	info, ok := r.slashButtons[buttonKey{ev.Message.ID, user, ev.Data.CustomID}]
+	info, ok := r.slashButtons[buttonKey{ev.Message.ID, user, data.CustomID}]
 	r.slashButtonMu.RUnlock()
 
 	if !ok {
@@ -261,7 +273,7 @@ func (r *Router) slashButton(ev *gateway.InteractionCreateEvent, user discord.Us
 
 	if info.delete {
 		r.slashButtonMu.Lock()
-		delete(r.slashButtons, buttonKey{ev.Message.ID, user, ev.Data.CustomID})
+		delete(r.slashButtons, buttonKey{ev.Message.ID, user, data.CustomID})
 		r.slashButtonMu.Unlock()
 	}
 }
@@ -284,37 +296,37 @@ func (ctx *Context) ButtonPagesWithComponents(embeds []discord.Embed, timeout ti
 		return
 	}
 
-	components = append(components, []discord.Component{discord.ActionRowComponent{
+	components = append(components, []discord.Component{&discord.ActionRowComponent{
 		Components: []discord.Component{
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "⏪",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "first",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "⬅️",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "prev",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "➡️",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "next",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "⏩",
 				},
 				Style:    discord.SecondaryButton,
 				CustomID: "last",
 			},
-			discord.ButtonComponent{
+			&discord.ButtonComponent{
 				Emoji: &discord.ButtonEmoji{
 					Name: "❌",
 				},

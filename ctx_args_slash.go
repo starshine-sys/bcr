@@ -5,13 +5,12 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/gateway"
 )
 
 // SlashCommandOption is a single slash command option with a name and value.
 type SlashCommandOption struct {
 	ctx *SlashContext
-	gateway.InteractionOption
+	discord.InteractionOption
 }
 
 // Option returns an option by name, or an empty option if it's not found.
@@ -30,11 +29,11 @@ func (ctx *SlashContext) Option(name string) (option SlashCommandOption) {
 // SlashCommandOptions is a slice of slash command options.
 type SlashCommandOptions struct {
 	ctx *SlashContext
-	s   []gateway.InteractionOption
+	s   []discord.InteractionOption
 }
 
 // NewSlashCommandOptions returns a new SlashCommandOptions.
-func NewSlashCommandOptions(ctx *SlashContext, s []gateway.InteractionOption) SlashCommandOptions {
+func NewSlashCommandOptions(ctx *SlashContext, s []discord.InteractionOption) SlashCommandOptions {
 	return SlashCommandOptions{
 		ctx: ctx, s: s,
 	}
