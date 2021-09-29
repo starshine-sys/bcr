@@ -233,6 +233,7 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 // ConfirmButton confirms a prompt with buttons or "yes"/"no" messages.
 func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) (yes, timeout bool) {
 	if data.Message == "" && len(data.Embeds) == 0 {
+		ctx.Router.Logger.Error("exiting because no message")
 		return
 	}
 
@@ -256,6 +257,7 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 	defer cancel()
 
 	err := ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
+		Type: api.MessageInteractionWithSource,
 		Data: &api.InteractionResponseData{
 			Content: option.NewNullableString(data.Message),
 			Embeds:  &data.Embeds,
@@ -279,11 +281,13 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 		},
 	})
 	if err != nil {
+		ctx.Router.Logger.Error("error sending interaction: %v", err)
 		return
 	}
 
 	msg, err := ctx.Original()
 	if err != nil {
+		ctx.Router.Logger.Error("error retrieving original: %v", err)
 		return
 	}
 
