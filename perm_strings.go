@@ -11,8 +11,6 @@ type Perm struct {
 // Permission constants that Arikawa is missing
 const (
 	PermissionViewServerInsights = 1 << 19
-	PermissionUseSlashCommands   = 1 << 31
-	PermissionRequestToSpeak     = 1 << 32
 )
 
 // All permissions
@@ -29,6 +27,7 @@ var (
 		{discord.PermissionManageRoles, "Manage Roles"},
 		{discord.PermissionManageNicknames, "Manage Nicknames"},
 		{discord.PermissionManageEmojisAndStickers, "Manage Emojis and Stickers"},
+		{discord.PermissionManageThreads, "Manage Threads"},
 		{discord.PermissionManageMessages, "Manage Messages"},
 
 		{discord.PermissionMentionEveryone, "Mention Everyone"},
@@ -46,6 +45,8 @@ var (
 		{discord.PermissionSendTTSMessages, "Send TTS Messages"},
 
 		{discord.PermissionCreateInstantInvite, "Create Invite"},
+		{discord.PermissionCreatePublicThreads, "Create Public Threads"},
+		{discord.PermissionCreatePrivateThreads, "Create Private Threads"},
 	}
 
 	MinorPerms = []Perm{
@@ -53,18 +54,19 @@ var (
 		{discord.PermissionUseVAD, "Use Voice Activity"},
 		{discord.PermissionSpeak, "Speak"},
 		{discord.PermissionConnect, "Connect"},
-		{PermissionRequestToSpeak, "Request to Speak"},
+		{discord.PermissionRequestToSpeak, "Request to Speak"},
 
 		{discord.PermissionAttachFiles, "Attach Files"},
 		{discord.PermissionEmbedLinks, "Embed Links"},
 
 		{discord.PermissionAddReactions, "Add Reactions"},
 		{discord.PermissionSendMessages, "Send Messages"},
+		{discord.PermissionSendMessagesInThreads, "Send Messages in Threads"},
 
 		{discord.PermissionReadMessageHistory, "Read Message History"},
 		{discord.PermissionViewChannel, "View Channel"},
 
-		{PermissionUseSlashCommands, "Use Slash Commands"},
+		{discord.PermissionUseSlashCommands, "Use Slash Commands"},
 
 		{discord.PermissionChangeNickname, "Change Nickname"},
 		{discord.PermissionUseExternalEmojis, "Use External Emojis"},

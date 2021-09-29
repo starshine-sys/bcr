@@ -7,8 +7,8 @@ github.com/ReneKroon/ttlcache/v2 v2.1.0/go.mod h1:0E5EIhFJrGmcn/niHrqnnvQHvihj+D
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/diamondburned/arikawa/v3 v3.0.0-rc.1.0.20210922175714-5d2d39d422c3 h1:lb1Va3Po1krbXplPSgNhwsztgFCP1KA/F2unkkZmCZo=
-github.com/diamondburned/arikawa/v3 v3.0.0-rc.1.0.20210922175714-5d2d39d422c3/go.mod h1:sNqM/iGXuH87wEH1rpQBEY1PR0AAkRKJuUhJGOdo7To=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.2.0.20210928211204-8ea320ccb91f h1:fdRI63cZl0Q16gDpDIkQLVAxVtKE2LsWluAmTRxms8w=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.2.0.20210928211204-8ea320ccb91f/go.mod h1:sNqM/iGXuH87wEH1rpQBEY1PR0AAkRKJuUhJGOdo7To=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/gorilla/schema v1.2.0 h1:YufUaxZYCKGFuAq3c96BOhjgd5nmXiOY9NGzF247Tsc=
 github.com/gorilla/schema v1.2.0/go.mod h1:kgLaKoK1FELgZqMAVxx/5cbj0kT+57qxUrAlIO2eleU=
