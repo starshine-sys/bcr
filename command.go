@@ -14,7 +14,7 @@ import (
 // CustomPerms is a custom permission checker
 type CustomPerms interface {
 	// The string used for the permissions if the check fails
-	String() string
+	String(Contexter) string
 
 	// Returns true if the user has permission to run the command
 	Check(Contexter) (bool, error)
@@ -181,7 +181,7 @@ type requireRole struct {
 
 var _ CustomPerms = (*requireRole)(nil)
 
-func (r *requireRole) String() string {
+func (r *requireRole) String(ctx Contexter) string {
 	return r.name
 }
 

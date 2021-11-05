@@ -145,7 +145,7 @@ func (ctx *Context) Help(path []string) (err error) {
 		}
 
 		if cmd.CustomPermissions != nil {
-			s = append(s, cmd.CustomPermissions.String())
+			s = append(s, cmd.CustomPermissions.String(ctx))
 		}
 
 		fields = append(fields, discord.EmbedField{
