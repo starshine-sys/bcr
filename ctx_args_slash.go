@@ -10,7 +10,7 @@ import (
 // SlashCommandOption is a single slash command option with a name and value.
 type SlashCommandOption struct {
 	ctx *SlashContext
-	discord.InteractionOption
+	discord.CommandInteractionOption
 }
 
 // Option returns an option by name, or an empty option if it's not found.
@@ -18,8 +18,8 @@ func (ctx *SlashContext) Option(name string) (option SlashCommandOption) {
 	for _, o := range ctx.CommandOptions {
 		if strings.EqualFold(o.Name, name) {
 			return SlashCommandOption{
-				ctx:               ctx,
-				InteractionOption: o,
+				ctx:                      ctx,
+				CommandInteractionOption: o,
 			}
 		}
 	}
@@ -29,11 +29,11 @@ func (ctx *SlashContext) Option(name string) (option SlashCommandOption) {
 // SlashCommandOptions is a slice of slash command options.
 type SlashCommandOptions struct {
 	ctx *SlashContext
-	s   []discord.InteractionOption
+	s   []discord.CommandInteractionOption
 }
 
 // NewSlashCommandOptions returns a new SlashCommandOptions.
-func NewSlashCommandOptions(ctx *SlashContext, s []discord.InteractionOption) SlashCommandOptions {
+func NewSlashCommandOptions(ctx *SlashContext, s []discord.CommandInteractionOption) SlashCommandOptions {
 	return SlashCommandOptions{
 		ctx: ctx, s: s,
 	}
@@ -44,8 +44,8 @@ func (options SlashCommandOptions) Get(name string) SlashCommandOption {
 	for _, o := range options.s {
 		if strings.EqualFold(o.Name, name) {
 			return SlashCommandOption{
-				ctx:               options.ctx,
-				InteractionOption: o,
+				ctx:                      options.ctx,
+				CommandInteractionOption: o,
 			}
 		}
 	}
@@ -57,8 +57,8 @@ func (o SlashCommandOption) Option(name string) SlashCommandOption {
 	for _, option := range o.Options {
 		if strings.EqualFold(option.Name, name) {
 			return SlashCommandOption{
-				ctx:               o.ctx,
-				InteractionOption: option,
+				ctx:                      o.ctx,
+				CommandInteractionOption: option,
 			}
 		}
 	}
@@ -67,7 +67,7 @@ func (o SlashCommandOption) Option(name string) SlashCommandOption {
 
 // Int returns the option as an integer, or 0 if it can't be converted.
 func (o SlashCommandOption) Int() int64 {
-	i, err := o.InteractionOption.Int()
+	i, err := o.CommandInteractionOption.IntValue()
 	if err != nil {
 		return 0
 	}
@@ -76,7 +76,7 @@ func (o SlashCommandOption) Int() int64 {
 
 // Float returns the option as a float, or 0 if it can't be converted.
 func (o SlashCommandOption) Float() float64 {
-	i, err := o.InteractionOption.Float()
+	i, err := o.CommandInteractionOption.FloatValue()
 	if err != nil {
 		return 0
 	}
@@ -85,7 +85,7 @@ func (o SlashCommandOption) Float() float64 {
 
 // Bool returns the option as a bool, or false if it can't be converted.
 func (o SlashCommandOption) Bool() bool {
-	b, err := o.InteractionOption.Bool()
+	b, err := o.CommandInteractionOption.BoolValue()
 	if err != nil {
 		return false
 	}
@@ -94,7 +94,7 @@ func (o SlashCommandOption) Bool() bool {
 
 // User returns the option as a user.
 func (o SlashCommandOption) User() (*discord.User, error) {
-	id, err := o.Snowflake()
+	id, err := o.SnowflakeValue()
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (o SlashCommandOption) Member() (*discord.Member, error) {
 		return nil, errors.Sentinel("not in a guild")
 	}
 
-	id, err := o.Snowflake()
+	id, err := o.SnowflakeValue()
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (o SlashCommandOption) Role() (*discord.Role, error) {
 		return nil, errors.Sentinel("not in a guild")
 	}
 
-	id, err := o.Snowflake()
+	id, err := o.SnowflakeValue()
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (o SlashCommandOption) Role() (*discord.Role, error) {
 
 // Channel returns the option as a channel.
 func (o SlashCommandOption) Channel() (*discord.Channel, error) {
-	id, err := o.Snowflake()
+	id, err := o.SnowflakeValue()
 	if err != nil {
 		return nil, err
 	}

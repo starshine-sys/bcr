@@ -77,10 +77,6 @@ type Context struct {
 
 	AdditionalParams map[string]interface{}
 
-	// Internal use for the Get* methods.
-	// Not intended to be changed by the end user, exported so it can be created if context is not made through NewContext.
-	FlagMap map[string]interface{}
-
 	origMessage *discord.Message
 }
 
@@ -125,7 +121,6 @@ func (r *Router) NewContext(m *gateway.MessageCreateEvent) (ctx *Context, err er
 		Router:           r,
 		Bot:              r.Bot,
 		AdditionalParams: make(map[string]interface{}),
-		FlagMap:          make(map[string]interface{}),
 	}
 
 	ctx.State, ctx.ShardID = r.StateFromGuildID(m.GuildID)

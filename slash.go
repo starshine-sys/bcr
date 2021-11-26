@@ -1,9 +1,11 @@
 package bcr
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/utils/httputil"
 	"github.com/starshine-sys/snowflake/v2"
 )
 
@@ -23,6 +25,7 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 	slashCmds := []discord.Command{}
 	for _, cmd := range cmds {
 		slashCmds = append(slashCmds, discord.Command{
+			Type:        discord.ChatInputCommand,
 			Name:        strings.ToLower(cmd.Name),
 			Description: cmd.Summary,
 			Options:     *cmd.Options,
@@ -71,6 +74,13 @@ func (r *Router) syncCommandsGlobal(cmds []discord.Command) (err error) {
 	}
 
 	_, err = s.BulkOverwriteCommands(appID, cmds)
+	if err != nil {
+		switch err := err.(type) {
+		case *httputil.HTTPError:
+			fmt.Printf("Discord returned code %d, body %s\n", err.Status, string(err.Body))
+		}
+	}
+
 	return
 }
 
@@ -110,6 +120,11 @@ func (r *Router) syncCommandsIn(cmds []discord.Command, guildIDs []discord.Guild
 
 		_, err = s.BulkOverwriteGuildCommands(appID, guild, cmds)
 		if err != nil {
+			switch err := err.(type) {
+			case *httputil.HTTPError:
+				fmt.Printf("Discord returned code %d, body %s\n", err.Status, string(err.Body))
+			}
+
 			return err
 		}
 	}

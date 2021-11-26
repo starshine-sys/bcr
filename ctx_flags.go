@@ -1,8 +1,6 @@
 package bcr
 
 import (
-	"strings"
-
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
@@ -21,116 +19,104 @@ type Flags interface {
 
 // GetStringFlag gets the named flag as a string, or falls back to an empty string.
 func (ctx *Context) GetStringFlag(name string) string {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return ""
 	}
 
-	s, ok := v.(*string)
-	if !ok || s == nil {
+	v, err := ctx.Flags.GetString(name)
+	if err != nil {
 		return ""
 	}
-	return *s
+	return v
 }
 
 // GetBoolFlag gets the named flag as a bool, or falls back to false.
 func (ctx *Context) GetBoolFlag(name string) bool {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return false
 	}
 
-	b, ok := v.(*bool)
-	if !ok || b == nil {
+	v, err := ctx.Flags.GetBool(name)
+	if err != nil {
 		return false
 	}
-	return *b
+	return v
 }
 
 // GetIntFlag gets the named flag as an int64, or falls back to 0.
 func (ctx *Context) GetIntFlag(name string) int64 {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return 0
 	}
 
-	i, ok := v.(*int64)
-	if !ok || i == nil {
+	v, err := ctx.Flags.GetInt64(name)
+	if err != nil {
 		return 0
 	}
-	return *i
+	return v
 }
 
 // GetFloatFlag gets the named flag as a float64, or falls back to 0.
 func (ctx *Context) GetFloatFlag(name string) float64 {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return 0
 	}
 
-	f, ok := v.(*float64)
-	if !ok || f == nil {
+	v, err := ctx.Flags.GetFloat64(name)
+	if err != nil {
 		return 0
 	}
-	return *f
+	return v
 }
 
 // GetUserFlag gets the named flag as a user.
 func (ctx *Context) GetUserFlag(name string) (*discord.User, error) {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return nil, ErrUserNotFound
 	}
 
-	s, ok := v.(*string)
-	if !ok || s == nil {
+	v, err := ctx.Flags.GetString(name)
+	if err != nil {
 		return nil, ErrUserNotFound
 	}
-
-	return ctx.ParseUser(*s)
+	return ctx.ParseUser(v)
 }
 
 // GetMemberFlag gets the named flag as a member.
 func (ctx *Context) GetMemberFlag(name string) (*discord.Member, error) {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return nil, ErrMemberNotFound
 	}
 
-	s, ok := v.(*string)
-	if !ok || s == nil {
+	v, err := ctx.Flags.GetString(name)
+	if err != nil {
 		return nil, ErrMemberNotFound
 	}
-
-	return ctx.ParseMember(*s)
+	return ctx.ParseMember(v)
 }
 
 // GetRoleFlag gets the named flag as a role.
 func (ctx *Context) GetRoleFlag(name string) (*discord.Role, error) {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return nil, ErrRoleNotFound
 	}
 
-	s, ok := v.(*string)
-	if !ok || s == nil {
+	v, err := ctx.Flags.GetString(name)
+	if err != nil {
 		return nil, ErrRoleNotFound
 	}
-
-	return ctx.ParseRole(*s)
+	return ctx.ParseRole(v)
 }
 
 // GetChannelFlag gets the named flag as a channel.
 func (ctx *Context) GetChannelFlag(name string) (*discord.Channel, error) {
-	v, ok := ctx.FlagMap[strings.ToLower(name)]
-	if !ok {
+	if ctx.Flags == nil {
 		return nil, ErrChannelNotFound
 	}
 
-	s, ok := v.(*string)
-	if !ok || s == nil {
+	v, err := ctx.Flags.GetString(name)
+	if err != nil {
 		return nil, ErrChannelNotFound
 	}
-
-	return ctx.ParseChannel(*s)
+	return ctx.ParseChannel(v)
 }

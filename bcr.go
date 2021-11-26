@@ -1,7 +1,6 @@
 package bcr
 
 import (
-	"flag"
 	"strings"
 	"sync"
 	"time"
@@ -126,37 +125,6 @@ func (r *Router) AddCommand(c *Command) *Command {
 		panic("command.Options set without command.SlashCommand being set")
 	}
 
-	if c.Options != nil && c.Command == nil {
-		c.stdFlags = func(ctx *Context, fs *flag.FlagSet) (*Context, *flag.FlagSet) {
-			for _, o := range *c.Options {
-				if o.Required {
-					continue
-				}
-
-				name := strings.ToLower(o.Name)
-
-				switch o.Type {
-				case discord.StringOption, discord.ChannelOption, discord.UserOption, discord.RoleOption, discord.MentionableOption:
-					v := fs.String(name, "", o.Description)
-					ctx.FlagMap[name] = v
-				case discord.IntegerOption:
-					v := fs.Int64(name, 0, o.Description)
-					ctx.FlagMap[name] = v
-				case discord.BooleanOption:
-					v := fs.Bool(name, false, o.Description)
-					ctx.FlagMap[name] = v
-				case discord.NumberOption:
-					v := fs.Float64(name, 0, o.Description)
-					ctx.FlagMap[name] = v
-				default:
-					ctx.Router.Logger.Error("invalid CommandOptionType set in command %v, option %v: %v", c.Name, o.Name, o.Type)
-				}
-			}
-
-			return ctx, fs
-		}
-	}
-
 	c.id = sGen.Get()
 	r.cmdMu.Lock()
 	defer r.cmdMu.Unlock()
@@ -182,9 +150,9 @@ func (r *Router) AddHandler(v interface{}) {
 func (r *Router) StateFromGuildID(guildID discord.GuildID) (st *state.State, id int) {
 	if guildID.IsValid() {
 		s, shardID := r.ShardManager.FromGuildID(guildID)
-		return s.(shard.ShardState).Shard.(*state.State), shardID
+		return s.(*state.State), shardID
 	}
 
 	s := r.ShardManager.Shard(0)
-	return s.(shard.ShardState).Shard.(*state.State), 0
+	return s.(*state.State), 0
 }

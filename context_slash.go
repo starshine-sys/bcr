@@ -28,7 +28,7 @@ type Contexter interface {
 	Send(string, ...discord.Embed) (*discord.Message, error)
 	Sendf(string, ...interface{}) (*discord.Message, error)
 
-	SendComponents([]discord.Component, string, ...discord.Embed) (*discord.Message, error)
+	SendComponents(discord.ContainerComponents, string, ...discord.Embed) (*discord.Message, error)
 
 	// SendFiles sends a message with attachments
 	SendFiles(string, ...sendpart.File) error
@@ -53,7 +53,7 @@ type Contexter interface {
 
 	// ButtonPages paginates a slice of embeds using buttons
 	ButtonPages(embeds []discord.Embed, timeout time.Duration) (msg *discord.Message, rmFunc func(), err error)
-	ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components []discord.Component) (msg *discord.Message, rmFunc func(), err error)
+	ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components discord.ContainerComponents) (msg *discord.Message, rmFunc func(), err error)
 
 	// ConfirmButton confirms a prompt with buttons or "yes"/"no" messages.
 	ConfirmButton(userID discord.UserID, data ConfirmData) (yes, timeout bool)
@@ -65,7 +65,7 @@ var _ Contexter = (*SlashContext)(nil)
 type SlashContext struct {
 	CommandID      discord.CommandID
 	CommandName    string
-	CommandOptions []discord.InteractionOption
+	CommandOptions []discord.CommandInteractionOption
 
 	InteractionID    discord.InteractionID
 	InteractionToken string
@@ -83,7 +83,7 @@ type SlashContext struct {
 
 	// Event is the original raw event
 	Event *gateway.InteractionCreateEvent
-	Data  *discord.CommandInteractionData
+	Data  *discord.CommandInteraction
 
 	AdditionalParams map[string]interface{}
 }
@@ -102,11 +102,14 @@ var (
 func (r *Router) NewSlashContext(ic *gateway.InteractionCreateEvent) (*SlashContext, error) {
 	var err error
 
-	if ic.Type != discord.CommandInteraction || ic.Data.Type() != discord.CommandInteraction {
+	if ic.Data.InteractionType() != discord.CommandInteractionType {
 		return nil, ErrNotCommand
 	}
 
-	data := ic.Data.(*discord.CommandInteractionData)
+	data, ok := ic.Data.(*discord.CommandInteraction)
+	if !ok {
+		return nil, ErrNotCommand
+	}
 
 	sc := &SlashContext{
 		Router:           r,
@@ -305,7 +308,7 @@ func (ctx *SlashContext) GuildPerms() (perms discord.Permissions) {
 }
 
 // SendComponents sends a message with components
-func (ctx *SlashContext) SendComponents(components []discord.Component, content string, embeds ...discord.Embed) (*discord.Message, error) {
+func (ctx *SlashContext) SendComponents(components discord.ContainerComponents, content string, embeds ...discord.Embed) (*discord.Message, error) {
 	data := api.InteractionResponse{
 		Type: api.MessageInteractionWithSource,
 		Data: &api.InteractionResponseData{

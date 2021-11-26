@@ -26,6 +26,7 @@ func (g *Group) Add(cmd *Command) *Group {
 // Command returns the group as a discord.Command.
 func (g Group) Command() discord.Command {
 	c := discord.Command{
+		Type:        discord.ChatInputCommand,
 		Name:        strings.ToLower(g.Name),
 		Description: g.Description,
 	}
@@ -35,14 +36,18 @@ func (g Group) Command() discord.Command {
 			continue
 		}
 
-		options := []discord.CommandOption(nil)
+		options := []discord.CommandOptionValue(nil)
 		if cmd.Options != nil {
-			options = *cmd.Options
+			for _, o := range *cmd.Options {
+				v, ok := o.(discord.CommandOptionValue)
+				if ok {
+					options = append(options, v)
+				}
+			}
 		}
 
-		c.Options = append(c.Options, discord.CommandOption{
-			Type:        discord.SubcommandOption,
-			Name:        strings.ToLower(cmd.Name),
+		c.Options = append(c.Options, &discord.SubcommandOption{
+			OptionName:  strings.ToLower(cmd.Name),
 			Description: cmd.Summary,
 			Options:     options,
 		})

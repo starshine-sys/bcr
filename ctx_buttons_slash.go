@@ -23,7 +23,7 @@ type slashButtonInfo struct {
 func (ctx *SlashContext) AddButtonHandler(
 	msg discord.MessageID,
 	user discord.UserID,
-	customID string,
+	customID discord.ComponentID,
 	del bool,
 	fn func(*SlashContext, *gateway.InteractionCreateEvent),
 ) ButtonRemoveFunc {
@@ -45,7 +45,7 @@ func (ctx *SlashContext) ButtonPages(embeds []discord.Embed, timeout time.Durati
 }
 
 // ButtonPagesWithComponents is like ButtonPages but adds the given components before the buttons used for pagination.
-func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components []discord.Component) (msg *discord.Message, rmFunc func(), err error) {
+func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeout time.Duration, components discord.ContainerComponents) (msg *discord.Message, rmFunc func(), err error) {
 	rmFunc = func() {}
 
 	if len(embeds) == 0 {
@@ -71,42 +71,40 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 	}
 
 	components = append(components, &discord.ActionRowComponent{
-		Components: []discord.Component{
-			&discord.ButtonComponent{
-				Emoji: &discord.ButtonEmoji{
-					Name: "⏪",
-				},
-				Style:    discord.SecondaryButton,
-				CustomID: "first",
+		&discord.ButtonComponent{
+			Emoji: &discord.ComponentEmoji{
+				Name: "⏪",
 			},
-			&discord.ButtonComponent{
-				Emoji: &discord.ButtonEmoji{
-					Name: "⬅️",
-				},
-				Style:    discord.SecondaryButton,
-				CustomID: "prev",
+			Style:    discord.SecondaryButtonStyle(),
+			CustomID: "first",
+		},
+		&discord.ButtonComponent{
+			Emoji: &discord.ComponentEmoji{
+				Name: "⬅️",
 			},
-			&discord.ButtonComponent{
-				Emoji: &discord.ButtonEmoji{
-					Name: "➡️",
-				},
-				Style:    discord.SecondaryButton,
-				CustomID: "next",
+			Style:    discord.SecondaryButtonStyle(),
+			CustomID: "prev",
+		},
+		&discord.ButtonComponent{
+			Emoji: &discord.ComponentEmoji{
+				Name: "➡️",
 			},
-			&discord.ButtonComponent{
-				Emoji: &discord.ButtonEmoji{
-					Name: "⏩",
-				},
-				Style:    discord.SecondaryButton,
-				CustomID: "last",
+			Style:    discord.SecondaryButtonStyle(),
+			CustomID: "next",
+		},
+		&discord.ButtonComponent{
+			Emoji: &discord.ComponentEmoji{
+				Name: "⏩",
 			},
-			&discord.ButtonComponent{
-				Emoji: &discord.ButtonEmoji{
-					Name: "❌",
-				},
-				Style:    discord.SecondaryButton,
-				CustomID: "cross",
+			Style:    discord.SecondaryButtonStyle(),
+			CustomID: "last",
+		},
+		&discord.ButtonComponent{
+			Emoji: &discord.ComponentEmoji{
+				Name: "❌",
 			},
+			Style:    discord.SecondaryButtonStyle(),
+			CustomID: "cross",
 		},
 	})
 
@@ -201,7 +199,7 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 		err = ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
 			Type: api.UpdateMessage,
 			Data: &api.InteractionResponseData{
-				Components: &[]discord.Component{},
+				Components: &discord.ContainerComponents{},
 			},
 		})
 		if err != nil {
@@ -212,7 +210,7 @@ func (ctx *SlashContext) ButtonPagesWithComponents(embeds []discord.Embed, timeo
 	rmFunc = func() {
 		o.Do(func() {
 			_, err = ctx.State.EditMessageComplex(msg.ChannelID, msg.ID, api.EditMessageData{
-				Components: &[]discord.Component{},
+				Components: &discord.ContainerComponents{},
 			})
 			if err != nil {
 				ctx.Router.Logger.Error("Editing message: %v", err)
@@ -240,14 +238,14 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 	if data.YesPrompt == "" {
 		data.YesPrompt = "Confirm"
 	}
-	if data.YesStyle == 0 {
-		data.YesStyle = discord.PrimaryButton
+	if data.YesStyle == nil {
+		data.YesStyle = discord.PrimaryButtonStyle()
 	}
 	if data.NoPrompt == "" {
 		data.NoPrompt = "Cancel"
 	}
-	if data.NoStyle == 0 {
-		data.NoStyle = discord.SecondaryButton
+	if data.NoStyle == nil {
+		data.NoStyle = discord.SecondaryButtonStyle()
 	}
 	if data.Timeout == 0 {
 		data.Timeout = time.Minute
@@ -262,19 +260,17 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 			Content: option.NewNullableString(data.Message),
 			Embeds:  &data.Embeds,
 
-			Components: &[]discord.Component{
+			Components: &discord.ContainerComponents{
 				&discord.ActionRowComponent{
-					Components: []discord.Component{
-						&discord.ButtonComponent{
-							Label:    data.YesPrompt,
-							Style:    data.YesStyle,
-							CustomID: "yes",
-						},
-						&discord.ButtonComponent{
-							Label:    data.NoPrompt,
-							Style:    data.NoStyle,
-							CustomID: "no",
-						},
+					&discord.ButtonComponent{
+						Label:    data.YesPrompt,
+						Style:    data.YesStyle,
+						CustomID: "yes",
+					},
+					&discord.ButtonComponent{
+						Label:    data.NoPrompt,
+						Style:    data.NoStyle,
+						CustomID: "no",
 					},
 				},
 			},
@@ -301,10 +297,13 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 			return false
 		}
 
-		if v.Data.Type() != discord.ComponentInteraction {
+		if v.Data.InteractionType() != discord.ComponentInteractionType {
 			return false
 		}
-		data := v.Data.(*discord.ComponentInteractionData)
+		data, ok := v.Data.(*discord.ButtonInteraction)
+		if !ok {
+			return false
+		}
 
 		if v.Message.ID != msg.ID {
 			return false
@@ -334,24 +333,20 @@ func (ctx *SlashContext) ConfirmButton(userID discord.UserID, data ConfirmData) 
 		return false, true
 	}
 
-	upd := &[]discord.Component{
-		&discord.ActionRowComponent{
-			Components: []discord.Component{
-				&discord.ButtonComponent{
-					Label:    data.YesPrompt,
-					Style:    data.YesStyle,
-					CustomID: "yes",
-					Disabled: true,
-				},
-				&discord.ButtonComponent{
-					Label:    data.NoPrompt,
-					Style:    data.NoStyle,
-					CustomID: "no",
-					Disabled: true,
-				},
-			},
+	upd := &discord.ContainerComponents{&discord.ActionRowComponent{
+		&discord.ButtonComponent{
+			Label:    data.YesPrompt,
+			Style:    data.YesStyle,
+			CustomID: "yes",
+			Disabled: true,
 		},
-	}
+		&discord.ButtonComponent{
+			Label:    data.NoPrompt,
+			Style:    data.NoStyle,
+			CustomID: "no",
+			Disabled: true,
+		},
+	}}
 
 	if ev, ok := v.(*gateway.InteractionCreateEvent); ok {
 		ctx.State.RespondInteraction(ev.ID, ev.Token, api.InteractionResponse{
