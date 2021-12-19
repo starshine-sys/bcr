@@ -131,13 +131,13 @@ func (r *Router) executeSlash(isTopLevel bool, ctx *SlashContext, cmds map[strin
 		b, err := cmd.CustomPermissions.Check(ctx)
 		// if it errored, send that error and return
 		if err != nil {
-			err = ctx.SendEphemeral(fmt.Sprintf(":x: An internal error occurred when checking your permissions.\nThe following permission(s) could not be checked:\n> ```%s```", cmd.CustomPermissions))
+			err = ctx.SendEphemeral(fmt.Sprintf(":x: An internal error occurred when checking your permissions.\nThe following permission(s) could not be checked:\n> ```%s```", cmd.CustomPermissions.String(ctx)))
 			return errCommand(err)
 		}
 
 		// else if it returned false, show that error and return
 		if !b {
-			err = ctx.SendEphemeral(fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permission(s):\n> ```%s```", cmd.CustomPermissions))
+			err = ctx.SendEphemeral(fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permission(s):\n> ```%s```", cmd.CustomPermissions.String(ctx)))
 			return errCommand(err)
 		}
 	}
