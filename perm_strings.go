@@ -11,6 +11,7 @@ type Perm struct {
 // Permission constants that Arikawa is missing
 const (
 	PermissionViewServerInsights = 1 << 19
+	PermissionModerateMembers    = 1 << 40
 )
 
 // All permissions
@@ -32,6 +33,7 @@ var (
 
 		{discord.PermissionMentionEveryone, "Mention Everyone"},
 
+		{discord.PermissionModerateMembers, "Timeout Members"},
 		{discord.PermissionMuteMembers, "Voice Mute Members"},
 		{discord.PermissionDeafenMembers, "Voice Deafen Members"},
 		{discord.PermissionMoveMembers, "Voice Move Members"},
@@ -58,6 +60,7 @@ var (
 
 		{discord.PermissionAttachFiles, "Attach Files"},
 		{discord.PermissionEmbedLinks, "Embed Links"},
+		{discord.PermissionStartEmbeddedActivities, "Start Embedded Activities"},
 
 		{discord.PermissionAddReactions, "Add Reactions"},
 		{discord.PermissionSendMessages, "Send Messages"},
