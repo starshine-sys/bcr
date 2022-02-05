@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/httputil"
 	"github.com/starshine-sys/snowflake/v2"
@@ -22,9 +23,9 @@ func (r *Router) SyncCommands(guildIDs ...discord.GuildID) (err error) {
 	}
 	r.cmdMu.Unlock()
 
-	slashCmds := []discord.Command{}
+	slashCmds := []api.CreateCommandData{}
 	for _, cmd := range cmds {
-		slashCmds = append(slashCmds, discord.Command{
+		slashCmds = append(slashCmds, api.CreateCommandData{
 			Type:        discord.ChatInputCommand,
 			Name:        strings.ToLower(cmd.Name),
 			Description: cmd.Summary,
@@ -50,7 +51,7 @@ func inCmds(cmds []*Command, id snowflake.ID) bool {
 	return false
 }
 
-func (r *Router) syncCommandsGlobal(cmds []discord.Command) (err error) {
+func (r *Router) syncCommandsGlobal(cmds []api.CreateCommandData) (err error) {
 	appID := discord.AppID(r.Bot.ID)
 	s, _ := r.StateFromGuildID(0)
 
@@ -84,7 +85,7 @@ func (r *Router) syncCommandsGlobal(cmds []discord.Command) (err error) {
 	return
 }
 
-func in(cmds []discord.Command, name string) bool {
+func in(cmds []api.CreateCommandData, name string) bool {
 	for _, cmd := range cmds {
 		if cmd.Name == name {
 			return true
@@ -93,7 +94,7 @@ func in(cmds []discord.Command, name string) bool {
 	return false
 }
 
-func (r *Router) syncCommandsIn(cmds []discord.Command, guildIDs []discord.GuildID) (err error) {
+func (r *Router) syncCommandsIn(cmds []api.CreateCommandData, guildIDs []discord.GuildID) (err error) {
 	appID := discord.AppID(r.Bot.ID)
 
 	for _, guild := range guildIDs {

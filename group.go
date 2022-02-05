@@ -3,6 +3,7 @@ package bcr
 import (
 	"strings"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
@@ -24,8 +25,8 @@ func (g *Group) Add(cmd *Command) *Group {
 }
 
 // Command returns the group as a discord.Command.
-func (g Group) Command() discord.Command {
-	c := discord.Command{
+func (g Group) Command() api.CreateCommandData {
+	c := api.CreateCommandData{
 		Type:        discord.ChatInputCommand,
 		Name:        strings.ToLower(g.Name),
 		Description: g.Description,
