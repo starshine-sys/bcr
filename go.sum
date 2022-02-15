@@ -11,6 +11,10 @@ github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20211220235611-bc8a2b0cae3f h1
 github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20211220235611-bc8a2b0cae3f/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
 github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220129113810-3fe7fbc24b83 h1:QaHkWnqhldNnG2JndjJqsUF+djBJE8fdcYSGUkiKAmI=
 github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220129113810-3fe7fbc24b83/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220205230513-7727d140a04c h1:erBLbcErpxM9cIhm+2xSNFlJq4oBYKMFw191xksfsbM=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220205230513-7727d140a04c/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220214064026-6dc189519c4e h1:GKPbEZ6+CCt8oO4rHMMSCZTltzjxZ6hQeGGuDB5banI=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220214064026-6dc189519c4e/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/gorilla/schema v1.2.0 h1:YufUaxZYCKGFuAq3c96BOhjgd5nmXiOY9NGzF247Tsc=
 github.com/gorilla/schema v1.2.0/go.mod h1:kgLaKoK1FELgZqMAVxx/5cbj0kT+57qxUrAlIO2eleU=
