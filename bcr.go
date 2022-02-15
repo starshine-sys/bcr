@@ -2,12 +2,22 @@ package bcr
 
 import (
 	"emperror.dev/errors"
-	"github.com/diamondburned/arikawa/v3/discord"
 )
 
-const ErrNotCommand = errors.Sentinel("not a command interaction")
+const (
+	ErrNotCommand = errors.Sentinel("not a command interaction")
+	ErrNotModal   = errors.Sentinel("not a modal interaction")
+)
 
-// Checker is typically implemented by check errors.
-type Checker interface {
-	CheckResponse() (content string, embeds []discord.Embed)
+const ErrUnknownCommand = errors.Sentinel("no command with that path found")
+
+type HasContext interface {
+	*CommandContext | *ModalContext
+}
+
+type HandlerFunc[T HasContext] func(T) error
+
+type handler[T HasContext] struct {
+	check   Check[T]
+	handler HandlerFunc[T]
 }

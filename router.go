@@ -12,7 +12,8 @@ type Router struct {
 	State        *state.State
 	ShardManager *shard.Manager
 
-	commands map[string]*command
+	commands map[string]*handler[*CommandContext]
+	modals   map[discord.ComponentID]*handler[*ModalContext]
 }
 
 func NewFromState(s *state.State) *Router {
@@ -22,7 +23,8 @@ func NewFromState(s *state.State) *Router {
 	r := &Router{
 		Rest:     c,
 		State:    s,
-		commands: map[string]*command{},
+		commands: make(map[string]*handler[*CommandContext]),
+		modals:   make(map[discord.ComponentID]*handler[*ModalContext]),
 	}
 
 	return r
@@ -35,4 +37,18 @@ func (r *Router) ShardFromGuildID(guildID discord.GuildID) (*state.State, int) {
 
 	s, id := r.ShardManager.FromGuildID(guildID)
 	return s.(*state.State), id
+}
+
+func (r *Router) Command(path string) *commandBuilder {
+	return &commandBuilder{
+		r:    r,
+		path: path,
+	}
+}
+
+func (r *Router) Modal(id discord.ComponentID) *modalBuilder {
+	return &modalBuilder{
+		r:  r,
+		id: id,
+	}
 }

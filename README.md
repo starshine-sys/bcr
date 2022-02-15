@@ -1,45 +1,9 @@
 # bcr
 
-A command handler based on [arikawa](https://github.com/diamondburned/arikawa).  
-Made with sharding in mind so it kinda sucks for bots made to run on a single server, but oh well
+Interaction router for [Arikawa](https://github.com/diamondburned/arikawa).
 
-Mostly for personal use, but feel free to use it elsewhere 🙂
+This is a full rewrite of the [original bcr](https://github.com/starshine-sys/bcr/tree/main/), focusing entirely on interactions (commands, components, and modals). It's designed to work with both a standard `*state.State` and a shard manager.
 
-Package `bot` contains a basic wrapper around `bcr`, for a categorized help command.
+## License
 
-## Example
-
-(replace `"token"` with your bot's token, and the user ID with your own ID)
-
-```go
-// create a router
-router, err := bcr.NewWithState("token", []discord.UserID{0}, []string{"~"})
-
-// make sure to add the message and interaction create handlers
-router.AddHandler(router.MessageCreate)
-router.AddHandler(router.InteractionCreate)
-
-// add a command
-router.AddCommand(&bcr.Command{
-    Name:    "ping",
-    Summary: "Ping pong!",
-
-    SlashCommand: func(ctx bcr.Contexter) error {
-        return ctx.SendX("Pong!")
-    },
-    Options: &[]discord.CommandOption{},
-})
-
-// populate router.Bot before running this
-if err := router.SyncCommands(); err != nil {
-    log.Fatalln("Failed to sync slash commands:", err)
-}
-
-// connect to discord
-if err := router.ShardManager.Open(context.Background()); err != nil {
-    log.Fatalln("Failed to connect:", err)
-}
-
-// block forever
-select {}
-```
+bcr is licensed under the [BSD 3-clause license](https://github.com/starshine-sys/bcr/blob/v2/LICENSE).
