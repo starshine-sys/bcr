@@ -30,6 +30,24 @@ func NewFromState(s *state.State) *Router {
 	return r
 }
 
+func NewFromShardManager(token string, m *shard.Manager) *Router {
+	c := api.NewClient(token)
+
+	m.ForEach(func(shard shard.Shard) {
+		s := shard.(*state.State)
+		s.Client = c
+	})
+
+	r := &Router{
+		Rest:         c,
+		ShardManager: m,
+		commands:     make(map[string]*handler[*CommandContext]),
+		modals:       make(map[discord.ComponentID]*handler[*ModalContext]),
+	}
+
+	return r
+}
+
 func (r *Router) ShardFromGuildID(guildID discord.GuildID) (*state.State, int) {
 	if r.ShardManager == nil {
 		return r.State, 0
