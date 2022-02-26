@@ -123,3 +123,8 @@ func (ctx *Context) reply(flags api.InteractionResponseFlags, content string, em
 		},
 	})
 }
+
+// Ctx implements HasContext
+func (ctx *Context) Ctx() *Context {
+	return ctx
+}

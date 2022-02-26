@@ -17,7 +17,7 @@ type CheckError[T HasContext] interface {
 	CheckError(T) (string, []discord.Embed)
 }
 
-// checkError is a basic implementation of CheckError that simply returns the given content and strings
+// checkError is a basic implementation of CheckError that simply returns the given content and string.
 type checkError[T HasContext] struct {
 	content string
 	embeds  []discord.Embed
@@ -26,6 +26,7 @@ type checkError[T HasContext] struct {
 func (c *checkError[T]) Error() string                          { return c.content }
 func (c *checkError[T]) CheckError(T) (string, []discord.Embed) { return c.content, c.embeds }
 
+// NewCheckError returns a simple, static CheckError.
 func NewCheckError[T HasContext](content string, embeds ...discord.Embed) error {
 	return &checkError[T]{
 		content: content,
@@ -59,20 +60,45 @@ func Or[T HasContext](checks ...Check[T]) Check[T] {
 	}
 }
 
-func HasChannelPermissions(perm discord.Permissions) Check[*CommandContext] {
-	return func(ctx *CommandContext) error {
-		if ctx.Member == nil || ctx.Guild == nil || ctx.Channel == nil {
-			return NewCheckError[*CommandContext]("This command cannot be run in DMs.")
+// HasChannelPermissions returns a check that requires the given permissions on a channel level (taking into account overwrites).
+func HasChannelPermissions[T HasContext](perm discord.Permissions) Check[T] {
+	return func(ctx T) error {
+		cctx := ctx.Ctx()
+		if cctx.Member == nil || cctx.Guild == nil || cctx.Channel == nil {
+			return NewCheckError[T]("This command cannot be run in DMs.")
 		}
 
-		if !overwrites(ctx.Guild, ctx.Channel, ctx.Member).Has(perm) {
+		if !overwrites(cctx.Guild, cctx.Channel, cctx.Member).Has(perm) {
 			permStrings := PermStrings(perm)
 			tmpl := "You must have the `%v` permission to use this command."
 			if len(permStrings) > 1 {
 				tmpl = "You must have following permissions to run this command: `%v`"
 			}
 
-			return NewCheckError[*CommandContext](
+			return NewCheckError[T](
+				fmt.Sprintf(tmpl, strings.Join(permStrings, ", ")))
+		}
+
+		return nil
+	}
+}
+
+// HasGuildPermissions returns a check that requires the given permissions on a guild level.
+func HasGuildPermissions[T HasContext](perm discord.Permissions) Check[T] {
+	return func(ctx T) error {
+		cctx := ctx.Ctx()
+		if cctx.Member == nil || cctx.Guild == nil {
+			return NewCheckError[T]("This command cannot be run in DMs.")
+		}
+
+		if !guildPerms(*cctx.Guild, *cctx.Member).Has(perm) {
+			permStrings := PermStrings(perm)
+			tmpl := "You must have the `%v` permission to use this command."
+			if len(permStrings) > 1 {
+				tmpl = "You must have following permissions to run this command: `%v`"
+			}
+
+			return NewCheckError[T](
 				fmt.Sprintf(tmpl, strings.Join(permStrings, ", ")))
 		}
 
@@ -87,4 +113,26 @@ func overwrites(g *discord.Guild, ch *discord.Channel, m *discord.Member) discor
 		return dmPermissions
 	}
 	return discord.CalcOverwrites(*g, *ch, *m)
+}
+
+func guildPerms(g discord.Guild, m discord.Member) discord.Permissions {
+	if g.OwnerID == m.User.ID {
+		return discord.PermissionAll
+	}
+
+	var perms discord.Permissions
+
+	for _, r := range g.Roles {
+		for _, id := range m.RoleIDs {
+			if r.ID == id {
+				if r.Permissions.Has(discord.PermissionAdministrator) {
+					return discord.PermissionAll
+				}
+
+				perms |= r.Permissions
+				break
+			}
+		}
+	}
+	return perms
 }

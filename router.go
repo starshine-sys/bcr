@@ -1,6 +1,8 @@
 package bcr
 
 import (
+	"sync"
+
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/session/shard"
@@ -14,6 +16,14 @@ type Router struct {
 
 	commands map[string]*handler[*CommandContext]
 	modals   map[discord.ComponentID]*handler[*ModalContext]
+
+	componentsMu sync.RWMutex
+	buttons      map[componentKey]*handler[*ButtonContext]
+}
+
+type componentKey struct {
+	id    discord.ComponentID
+	msgID discord.MessageID
 }
 
 func NewFromState(s *state.State) *Router {
@@ -25,6 +35,7 @@ func NewFromState(s *state.State) *Router {
 		State:    s,
 		commands: make(map[string]*handler[*CommandContext]),
 		modals:   make(map[discord.ComponentID]*handler[*ModalContext]),
+		buttons:  make(map[componentKey]*handler[*ButtonContext]),
 	}
 
 	return r
@@ -57,16 +68,24 @@ func (r *Router) ShardFromGuildID(guildID discord.GuildID) (*state.State, int) {
 	return s.(*state.State), id
 }
 
-func (r *Router) Command(path string) *commandBuilder {
-	return &commandBuilder{
+func (r *Router) Command(path string) *CommandBuilder {
+	return &CommandBuilder{
 		r:    r,
 		path: path,
 	}
 }
 
-func (r *Router) Modal(id discord.ComponentID) *modalBuilder {
-	return &modalBuilder{
+func (r *Router) Modal(id discord.ComponentID) *ModalBuilder {
+	return &ModalBuilder{
 		r:  r,
 		id: id,
+	}
+}
+
+func (r *Router) Button(id discord.ComponentID) *ButtonBuilder {
+	return &ButtonBuilder{
+		r:     r,
+		id:    id,
+		msgID: discord.NullMessageID,
 	}
 }

@@ -103,3 +103,49 @@ func (r *Router) executeModal(ic *gateway.InteractionCreateEvent) error {
 
 	return hn.handler(ctx)
 }
+
+func (r *Router) executeButton(ic *gateway.InteractionCreateEvent) error {
+	ctx, err := r.NewButtonContext(ic)
+	if err != nil {
+		return err
+	}
+
+	// check for message-scoped button
+	msgID := ctx.Event.Message.ID
+
+	r.componentsMu.RLock()
+	hn, ok := r.buttons[componentKey{ctx.ID, ctx.Event.Message.ID}]
+	if !ok {
+		hn, ok = r.buttons[componentKey{ctx.ID, discord.NullMessageID}]
+		if !ok {
+			r.componentsMu.RUnlock()
+
+			return nil
+		}
+		msgID = discord.NullMessageID
+	}
+	r.componentsMu.RUnlock()
+
+	err = hn.check(ctx)
+	if err != nil {
+		if hn.once {
+			return nil
+		}
+
+		if v, ok := err.(CheckError[*ButtonContext]); ok {
+			s, e := v.CheckError(ctx)
+			return ctx.Reply(s, e...)
+		}
+		return ctx.Reply(
+			fmt.Sprintf("Unable to handle button:\n%v", err),
+		)
+	}
+
+	if hn.once {
+		r.componentsMu.Lock()
+		delete(r.buttons, componentKey{ctx.ID, msgID})
+		r.componentsMu.Unlock()
+	}
+
+	return hn.handler(ctx)
+}
