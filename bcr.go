@@ -24,3 +24,10 @@ type handler[T HasContext] struct {
 	// only used in button/select interactions
 	once bool
 }
+
+func (hn *handler[T]) doCheck(ctx T) error {
+	if hn.check == nil {
+		return nil
+	}
+	return hn.check(ctx)
+}

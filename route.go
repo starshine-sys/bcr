@@ -45,9 +45,7 @@ func (r *Router) executeCommand(ic *gateway.InteractionCreateEvent) error {
 		return err
 	}
 
-	ctx.Command = append(ctx.Command, ctx.Data.Name)
 	options := ctx.Options
-
 	if len(ctx.Options) > 0 {
 		if ctx.Options[0].Type == discord.SubcommandOptionType {
 			ctx.Command = append(ctx.Command, ctx.Options[0].Name)
@@ -65,7 +63,7 @@ func (r *Router) executeCommand(ic *gateway.InteractionCreateEvent) error {
 		return ErrUnknownCommand
 	}
 
-	err = hn.check(ctx)
+	err = hn.doCheck(ctx)
 	if err != nil {
 		if v, ok := err.(CheckError[*CommandContext]); ok {
 			s, e := v.CheckError(ctx)
@@ -90,7 +88,7 @@ func (r *Router) executeModal(ic *gateway.InteractionCreateEvent) error {
 		return nil
 	}
 
-	err = hn.check(ctx)
+	err = hn.doCheck(ctx)
 	if err != nil {
 		if v, ok := err.(CheckError[*ModalContext]); ok {
 			s, e := v.CheckError(ctx)
@@ -126,7 +124,7 @@ func (r *Router) executeButton(ic *gateway.InteractionCreateEvent) error {
 	}
 	r.componentsMu.RUnlock()
 
-	err = hn.check(ctx)
+	err = hn.doCheck(ctx)
 	if err != nil {
 		if hn.once {
 			return nil
