@@ -34,3 +34,17 @@ func (r *Router) NewCommandContext(ic *gateway.InteractionCreateEvent) (ctx *Com
 
 	return ctx, nil
 }
+
+func (ctx *CommandContext) FirstUser() discord.User {
+	for _, u := range ctx.Data.Resolved.Users {
+		return u
+	}
+	return discord.User{}
+}
+
+func (ctx *CommandContext) FirstMessage() discord.Message {
+	for _, u := range ctx.Data.Resolved.Messages {
+		return u
+	}
+	return discord.Message{}
+}
