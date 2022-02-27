@@ -8,8 +8,8 @@ import (
 type ButtonContext struct {
 	*Context
 
-	Data *discord.ButtonInteraction
-	ID   discord.ComponentID
+	Data     *discord.ButtonInteraction
+	CustomID discord.ComponentID
 }
 
 // ButtonContext creates a new command context.
@@ -25,9 +25,9 @@ func (r *Router) NewButtonContext(ic *gateway.InteractionCreateEvent) (ctx *Butt
 	}
 
 	ctx = &ButtonContext{
-		Context: root,
-		Data:    data,
-		ID:      data.CustomID,
+		Context:  root,
+		Data:     data,
+		CustomID: data.CustomID,
 	}
 
 	return ctx, nil

@@ -22,6 +22,19 @@ func (c *CommandBuilder) Exec(hn HandlerFunc[*CommandContext]) {
 	}
 }
 
+type AutocompleteBuilder struct {
+	r     *Router
+	path  string
+	check Check[*AutocompleteContext]
+}
+
+// Exec adds this autocomplete handler to the router.
+func (c *AutocompleteBuilder) Exec(hn HandlerFunc[*AutocompleteContext]) {
+	c.r.autocompletes[c.path] = &handler[*AutocompleteContext]{
+		handler: hn,
+	}
+}
+
 type ModalBuilder struct {
 	r     *Router
 	id    discord.ComponentID
@@ -76,6 +89,46 @@ func (b *ButtonBuilder) Exec(hn HandlerFunc[*ButtonContext]) {
 	defer b.r.componentsMu.Unlock()
 
 	b.r.buttons[componentKey{b.id, b.msgID}] = &handler[*ButtonContext]{
+		check:   b.check,
+		handler: hn,
+		once:    b.once,
+	}
+}
+
+type SelectBuilder struct {
+	r     *Router
+	id    discord.ComponentID
+	check Check[*SelectContext]
+	once  bool
+	msgID discord.MessageID
+}
+
+// Once changes this select interaction to only be listened for once.
+// If the check fails, it will be silent, and the select will not be removed.
+func (b *SelectBuilder) Once() *SelectBuilder {
+	b.once = true
+	return b
+}
+
+// Message changes this Select interaction to be limited to a single message ID.
+func (b *SelectBuilder) Message(id discord.MessageID) *SelectBuilder {
+	b.msgID = id
+	return b
+}
+
+// Check adds a check to this select handler.
+// The behaviour of the passed check is controlled by b.Once().
+func (b *SelectBuilder) Check(check Check[*SelectContext]) *SelectBuilder {
+	b.check = check
+	return b
+}
+
+// Exec adds this select to the router.
+func (b *SelectBuilder) Exec(hn HandlerFunc[*SelectContext]) {
+	b.r.componentsMu.Lock()
+	defer b.r.componentsMu.Unlock()
+
+	b.r.selects[componentKey{b.id, b.msgID}] = &handler[*SelectContext]{
 		check:   b.check,
 		handler: hn,
 		once:    b.once,
