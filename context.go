@@ -128,3 +128,10 @@ func (ctx *Context) reply(flags api.InteractionResponseFlags, content string, em
 func (ctx *Context) Ctx() *Context {
 	return ctx
 }
+
+// Original returns the original response to an interaction, if any.
+func (ctx *Context) Original() (msg *discord.Message, err error) {
+	url := api.EndpointWebhooks + ctx.State.Ready().User.ID.String() + "/" + ctx.InteractionToken + "/messages/@original"
+
+	return msg, ctx.State.RequestJSON(&msg, "GET", url)
+}
