@@ -9,7 +9,7 @@ type CommandContext struct {
 	*Context
 
 	Command []string
-	Options []discord.CommandInteractionOption
+	Options discord.CommandInteractionOptions
 	Data    *discord.CommandInteraction
 }
 
@@ -47,4 +47,8 @@ func (ctx *CommandContext) FirstMessage() discord.Message {
 		return u
 	}
 	return discord.Message{}
+}
+
+func (ctx *CommandContext) Option(name string) discord.CommandInteractionOption {
+	return ctx.Options.Find(name)
 }
