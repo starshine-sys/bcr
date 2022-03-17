@@ -131,7 +131,25 @@ func (ctx *Context) Ctx() *Context {
 
 // Original returns the original response to an interaction, if any.
 func (ctx *Context) Original() (msg *discord.Message, err error) {
-	url := api.EndpointWebhooks + ctx.State.Ready().User.ID.String() + "/" + ctx.InteractionToken + "/messages/@original"
+	url := api.EndpointWebhooks + ctx.Event.AppID.String() + "/" + ctx.InteractionToken + "/messages/@original"
 
 	return msg, ctx.State.RequestJSON(&msg, "GET", url)
+}
+
+func (ctx *Context) ReplyComplex(data api.InteractionResponseData) error {
+	if ctx.deferred {
+		_, err := ctx.State.EditInteractionResponse(ctx.Event.AppID, ctx.InteractionToken, api.EditInteractionResponseData{
+			Content:         data.Content,
+			Embeds:          data.Embeds,
+			Components:      data.Components,
+			AllowedMentions: data.AllowedMentions,
+			Files:           data.Files,
+		})
+		return err
+	}
+
+	return ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
+		Type: api.MessageInteractionWithSource,
+		Data: &data,
+	})
 }
