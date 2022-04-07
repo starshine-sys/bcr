@@ -46,7 +46,10 @@ func (data PaginateData) responseData(cs discord.ContainerComponent) *api.Intera
 		mentions = data.AllowedMentions
 	}
 
-	components := append(data.Components, cs)
+	var components discord.ContainerComponents
+	if cs != nil {
+		components = append(data.Components, cs)
+	}
 
 	return &api.InteractionResponseData{
 		Content:         option.NewNullableString(data.Content),
