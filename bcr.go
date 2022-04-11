@@ -35,6 +35,7 @@ type Router struct {
 	HelpCommand     func(*Context) error
 	DefaultMentions *api.AllowedMentions
 	EmbedColor      discord.Color
+	PermissionCheck func(*Context) (bool, string, []discord.Embed) // ⇒ allowed/blocked, response contents if blocked
 
 	ReactTimeout time.Duration
 

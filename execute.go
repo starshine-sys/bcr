@@ -137,6 +137,20 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 		}
 	}
 
+	// check router-level permissions
+	// (usually, custom permission systems)
+	if r.PermissionCheck != nil {
+		ok, s, embeds := r.PermissionCheck(ctx)
+		if !ok {
+			if s != "" || len(embeds) > 0 {
+				if err = ctx.SendX(s, embeds...); err != nil {
+					return err
+				}
+			}
+			return errCommandRun
+		}
+	}
+
 	// check for a cooldown
 	if r.cooldowns.Get(strings.Join(ctx.FullCommandPath, "-"), ctx.Author.ID, ctx.Channel.ID) {
 		_, err = ctx.Sendf(":x: This command can only be run once every %v.", c.Cooldown)
