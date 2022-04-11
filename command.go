@@ -34,7 +34,7 @@ type Command struct {
 	// Usage is appended to the command name in help commands
 	Usage string
 
-	// Hidden commands are not returned from (*Router).Commands()
+	// Hidden commands are not shown in the help command
 	Hidden bool
 
 	Args *Args
@@ -108,6 +108,20 @@ func (c *Command) GetCommand(name string) *Command {
 		return v
 	}
 	return nil
+}
+
+func (c *Command) Subcommands() []*Command {
+	// deduplicate commands
+	sf := make([]snowflake.Snowflake, 0)
+	cmds := make([]*Command, 0)
+	for _, c := range c.subCmds {
+		if !snowflakeInSlice(c.id, sf) {
+			sf = append(sf, c.id)
+			cmds = append(cmds, c)
+		}
+	}
+
+	return cmds
 }
 
 // Args is a minimum/maximum argument count.
