@@ -136,6 +136,11 @@ func (ctx *Context) Help(path []string) (err error) {
 			s = append(s, cmd.CustomPermissions.String(ctx))
 		}
 
+		if ctx.Router.PermissionCheck != nil {
+			name, _, _ := ctx.Router.PermissionCheck(ctx)
+			s = append(s, name)
+		}
+
 		fields = append(fields, discord.EmbedField{
 			Name:  "Required permissions",
 			Value: strings.Join(s, "\n"),
