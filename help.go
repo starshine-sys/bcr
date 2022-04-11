@@ -121,7 +121,7 @@ func (ctx *Context) Help(path []string) (err error) {
 		})
 	}
 
-	if cmd.GuildPermissions != 0 || cmd.Permissions != 0 || cmd.CustomPermissions != nil {
+	if cmd.GuildPermissions != 0 || cmd.Permissions != 0 || cmd.CustomPermissions != nil || ctx.Router.PermissionCheck != nil {
 		s := []string{}
 
 		if cmd.GuildPermissions != 0 {
