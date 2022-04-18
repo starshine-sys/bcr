@@ -35,7 +35,10 @@ type Router struct {
 	HelpCommand     func(*Context) error
 	DefaultMentions *api.AllowedMentions
 	EmbedColor      discord.Color
-	PermissionCheck func(*Context) (name string, allowed bool, data api.SendMessageData) // ⇒ permission name, allowed/blocked, error message
+	// global permission check
+	// "routing" is true if it's being executed during routing, false if it's executed just for the name
+	// return: permission name, allowed/blocked, error message
+	PermissionCheck func(ctx *Context, routing bool) (name string, allowed bool, data api.SendMessageData)
 
 	ReactTimeout time.Duration
 

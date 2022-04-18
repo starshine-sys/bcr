@@ -137,7 +137,7 @@ func (ctx *Context) Help(path []string) (err error) {
 		}
 
 		if ctx.Router.PermissionCheck != nil {
-			name, _, _ := ctx.Router.PermissionCheck(ctx)
+			name, _, _ := ctx.Router.PermissionCheck(ctx, false)
 			s = append(s, name)
 		}
 

@@ -140,7 +140,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 	// check router-level permissions
 	// (usually, custom permission systems)
 	if r.PermissionCheck != nil {
-		_, allowed, data := r.PermissionCheck(ctx)
+		_, allowed, data := r.PermissionCheck(ctx, true)
 		if !allowed {
 			if _, err = ctx.State.SendMessageComplex(ctx.Channel.ID, data); err != nil {
 				return err
