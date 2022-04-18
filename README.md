@@ -1,5 +1,8 @@
 # bcr
 
+**Note: this version of bcr is mostly unmaintained, and the text commands will eventually™ be replaced by [grc](https://codeberg.org/gardener/grc).**  
+bcr is being rewritten as an interaction router in the [v2](https://github.com/starshine-sys/bcr/tree/v2) branch.
+
 A command handler based on [arikawa](https://github.com/diamondburned/arikawa).  
 Made with sharding in mind so it kinda sucks for bots made to run on a single server, but oh well
 
