@@ -261,11 +261,11 @@ func findHandler[T HasContext](
 		}
 
 		if v.prefixWildcard {
-			if strings.HasPrefix(string(customID), string(k.id)) {
+			if strings.HasSuffix(string(customID), string(k.id)) {
 				return v, false, true
 			}
 		} else if v.suffixWildcard {
-			if strings.HasSuffix(string(customID), string(k.id)) {
+			if strings.HasPrefix(string(customID), string(k.id)) {
 				return v, false, true
 			}
 		}
