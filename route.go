@@ -85,7 +85,10 @@ func (r *Router) executeModal(ic *gateway.InteractionCreateEvent) error {
 
 	hn, ok := r.modals[ctx.CustomID]
 	if !ok {
-		return nil
+		hn, ok = r.findWildcardModal(ctx.CustomID)
+		if !ok {
+			return nil
+		}
 	}
 
 	err = hn.doCheck(ctx)
@@ -112,17 +115,15 @@ func (r *Router) executeButton(ic *gateway.InteractionCreateEvent) error {
 	msgID := ctx.Event.Message.ID
 
 	r.componentsMu.RLock()
-	hn, ok := r.buttons[componentKey{ctx.CustomID, ctx.Event.Message.ID}]
+	hn, msgScoped, ok := findHandler(r.buttons, ctx.CustomID, ctx.Event.Message.ID)
+	r.componentsMu.RUnlock()
 	if !ok {
-		hn, ok = r.buttons[componentKey{ctx.CustomID, discord.NullMessageID}]
-		if !ok {
-			r.componentsMu.RUnlock()
+		return nil
+	}
 
-			return nil
-		}
+	if !msgScoped {
 		msgID = discord.NullMessageID
 	}
-	r.componentsMu.RUnlock()
 
 	err = hn.doCheck(ctx)
 	if err != nil {
@@ -158,17 +159,15 @@ func (r *Router) executeSelect(ic *gateway.InteractionCreateEvent) error {
 	msgID := ctx.Event.Message.ID
 
 	r.componentsMu.RLock()
-	hn, ok := r.selects[componentKey{ctx.CustomID, ctx.Event.Message.ID}]
+	hn, msgScoped, ok := findHandler(r.selects, ctx.CustomID, ctx.Event.Message.ID)
+	r.componentsMu.RUnlock()
 	if !ok {
-		hn, ok = r.selects[componentKey{ctx.CustomID, discord.NullMessageID}]
-		if !ok {
-			r.componentsMu.RUnlock()
+		return nil
+	}
 
-			return nil
-		}
+	if !msgScoped {
 		msgID = discord.NullMessageID
 	}
-	r.componentsMu.RUnlock()
 
 	err = hn.doCheck(ctx)
 	if err != nil {
@@ -219,4 +218,57 @@ func (r *Router) executeAutocomplete(ic *gateway.InteractionCreateEvent) error {
 	}
 
 	return hn.handler(ctx)
+}
+
+func (r *Router) findWildcardModal(id discord.ComponentID) (*handler[*ModalContext], bool) {
+	for k, v := range r.modals {
+		if v.prefixWildcard {
+			if strings.HasPrefix(string(id), string(k)) {
+				return v, true
+			}
+		} else if v.suffixWildcard {
+			if strings.HasSuffix(string(id), string(k)) {
+				return v, true
+			}
+		}
+	}
+	return nil, false
+}
+
+// findHandler finds a handler in the given map.
+// It assumes m is already locked for reading.
+func findHandler[T HasContext](
+	m map[componentKey]*handler[T],
+	customID discord.ComponentID,
+	msgID discord.MessageID,
+) (h *handler[T], msgScoped bool, ok bool) {
+
+	hn, ok := m[componentKey{customID, msgID}]
+	if ok {
+		return hn, true, true
+	}
+
+	hn, ok = m[componentKey{customID, discord.NullMessageID}]
+	if ok {
+		return hn, false, true
+	}
+
+	// check wildcards
+	for k, v := range m {
+		// message-scoped components cannot be wildcards
+		if k.msgID.IsValid() {
+			continue
+		}
+
+		if v.prefixWildcard {
+			if strings.HasPrefix(string(customID), string(k.id)) {
+				return v, false, true
+			}
+		} else if v.suffixWildcard {
+			if strings.HasSuffix(string(customID), string(k.id)) {
+				return v, false, true
+			}
+		}
+	}
+	return nil, false, false
 }

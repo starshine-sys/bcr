@@ -22,7 +22,8 @@ type handler[T HasContext] struct {
 	check   Check[T]
 	handler HandlerFunc[T]
 	// only used in button/select interactions
-	once bool
+	once                           bool
+	prefixWildcard, suffixWildcard bool
 }
 
 func (hn *handler[T]) doCheck(ctx T) error {

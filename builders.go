@@ -39,6 +39,9 @@ type ModalBuilder struct {
 	r     *Router
 	id    discord.ComponentID
 	check Check[*ModalContext]
+
+	prefixWildcard bool
+	suffixWildcard bool
 }
 
 // Check adds a check to this modal handler.
@@ -50,8 +53,10 @@ func (m *ModalBuilder) Check(check Check[*ModalContext]) *ModalBuilder {
 // Exec adds this modal to the router.
 func (m *ModalBuilder) Exec(hn HandlerFunc[*ModalContext]) {
 	m.r.modals[m.id] = &handler[*ModalContext]{
-		check:   m.check,
-		handler: hn,
+		check:          m.check,
+		handler:        hn,
+		prefixWildcard: m.prefixWildcard,
+		suffixWildcard: m.suffixWildcard,
 	}
 }
 
@@ -61,6 +66,9 @@ type ButtonBuilder struct {
 	check Check[*ButtonContext]
 	once  bool
 	msgID discord.MessageID
+
+	prefixWildcard bool
+	suffixWildcard bool
 }
 
 // Once changes this button interaction to only be listened for once.
@@ -89,9 +97,11 @@ func (b *ButtonBuilder) Exec(hn HandlerFunc[*ButtonContext]) {
 	defer b.r.componentsMu.Unlock()
 
 	b.r.buttons[componentKey{b.id, b.msgID}] = &handler[*ButtonContext]{
-		check:   b.check,
-		handler: hn,
-		once:    b.once,
+		check:          b.check,
+		handler:        hn,
+		once:           b.once,
+		prefixWildcard: b.prefixWildcard,
+		suffixWildcard: b.suffixWildcard,
 	}
 }
 
@@ -101,6 +111,9 @@ type SelectBuilder struct {
 	check Check[*SelectContext]
 	once  bool
 	msgID discord.MessageID
+
+	prefixWildcard bool
+	suffixWildcard bool
 }
 
 // Once changes this select interaction to only be listened for once.
@@ -129,8 +142,10 @@ func (b *SelectBuilder) Exec(hn HandlerFunc[*SelectContext]) {
 	defer b.r.componentsMu.Unlock()
 
 	b.r.selects[componentKey{b.id, b.msgID}] = &handler[*SelectContext]{
-		check:   b.check,
-		handler: hn,
-		once:    b.once,
+		check:          b.check,
+		handler:        hn,
+		once:           b.once,
+		prefixWildcard: b.prefixWildcard,
+		suffixWildcard: b.suffixWildcard,
 	}
 }

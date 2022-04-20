@@ -1,6 +1,7 @@
 package bcr
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/diamondburned/arikawa/v3/api"
@@ -90,24 +91,54 @@ func (r *Router) Autocomplete(path string) *AutocompleteBuilder {
 }
 
 func (r *Router) Modal(id discord.ComponentID) *ModalBuilder {
-	return &ModalBuilder{
+	b := &ModalBuilder{
 		r:  r,
 		id: id,
 	}
+
+	if strings.HasSuffix(string(id), "*") {
+		b.suffixWildcard = true
+		b.id = discord.ComponentID(strings.TrimSuffix(string(id), "*"))
+	} else if strings.HasPrefix(string(id), "*") {
+		b.prefixWildcard = true
+		b.id = discord.ComponentID(strings.TrimPrefix(string(id), "*"))
+	}
+
+	return b
 }
 
 func (r *Router) Button(id discord.ComponentID) *ButtonBuilder {
-	return &ButtonBuilder{
+	b := &ButtonBuilder{
 		r:     r,
 		id:    id,
 		msgID: discord.NullMessageID,
 	}
+
+	if strings.HasSuffix(string(id), "*") {
+		b.suffixWildcard = true
+		b.id = discord.ComponentID(strings.TrimSuffix(string(id), "*"))
+	} else if strings.HasPrefix(string(id), "*") {
+		b.prefixWildcard = true
+		b.id = discord.ComponentID(strings.TrimPrefix(string(id), "*"))
+	}
+
+	return b
 }
 
 func (r *Router) Select(id discord.ComponentID) *SelectBuilder {
-	return &SelectBuilder{
+	b := &SelectBuilder{
 		r:     r,
 		id:    id,
 		msgID: discord.NullMessageID,
 	}
+
+	if strings.HasSuffix(string(id), "*") {
+		b.suffixWildcard = true
+		b.id = discord.ComponentID(strings.TrimSuffix(string(id), "*"))
+	} else if strings.HasPrefix(string(id), "*") {
+		b.prefixWildcard = true
+		b.id = discord.ComponentID(strings.TrimPrefix(string(id), "*"))
+	}
+
+	return b
 }
