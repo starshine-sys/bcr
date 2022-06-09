@@ -33,13 +33,13 @@ func (r *Router) MessageCreate(m *gateway.MessageCreateEvent) {
 	// get the context
 	ctx, err := r.NewContext(m)
 	if err != nil {
-		ctx.Router.Logger.Error("getting context: %v", err)
+		r.Logger.Error("getting context: %v", err)
 		return
 	}
 
 	err = r.Execute(ctx)
 	if err != nil {
-		ctx.Router.Logger.Error("executing command: %v", err)
+		r.Logger.Error("executing command: %v", err)
 		return
 	}
 }
