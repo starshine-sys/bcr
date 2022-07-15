@@ -42,30 +42,14 @@ func (r *Router) NewRootContext(ic *gateway.InteractionCreateEvent) (ctx *Contex
 	state, _ := r.ShardFromGuildID(ic.GuildID)
 	ctx.State = state
 
-	// get guild
-	if ic.GuildID.IsValid() {
-		ctx.Guild, err = ctx.State.Guild(ic.GuildID)
-		if err != nil {
-			return ctx, err
-		}
-		ctx.Guild.Roles, err = ctx.State.Roles(ic.GuildID)
-		if err != nil {
-			return ctx, err
-		}
-	}
-
-	// get the channel
-	ctx.Channel, err = ctx.State.Channel(ic.ChannelID)
+	g, ch, parentCh, err := r.CollectFunc(state, ic.GuildID, ic.ChannelID)
 	if err != nil {
 		return ctx, err
 	}
 
-	if IsThread(ctx.Channel) {
-		ctx.ParentChannel, err = ctx.State.Channel(ctx.Channel.ParentID)
-		if err != nil {
-			return ctx, err
-		}
-	}
+	ctx.Guild = g
+	ctx.Channel = ch
+	ctx.ParentChannel = parentCh
 
 	return ctx, nil
 }

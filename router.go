@@ -15,6 +15,10 @@ type Router struct {
 	State        *state.State
 	ShardManager *shard.Manager
 
+	// CollectFunc is the function used to collect the guild and channel an interaction takes place in.
+	// The default CollectFunc uses a *state.State, but this can be overridden for more specialized caches.
+	CollectFunc CollectFunc
+
 	commands      map[string]*handler[*CommandContext]
 	autocompletes map[string]*handler[*AutocompleteContext]
 	modals        map[discord.ComponentID]*handler[*ModalContext]
@@ -63,6 +67,8 @@ func NewFromShardManager(token string, m *shard.Manager) *Router {
 		buttons:       make(map[componentKey]*handler[*ButtonContext]),
 		selects:       make(map[componentKey]*handler[*SelectContext]),
 	}
+
+	r.CollectFunc = r.DefaultCollectFunc
 
 	return r
 }
@@ -141,4 +147,36 @@ func (r *Router) Select(id discord.ComponentID) *SelectBuilder {
 	}
 
 	return b
+}
+
+func (r *Router) DefaultCollectFunc(s *state.State, guildID discord.GuildID, channelID discord.ChannelID) (
+	g *discord.Guild,
+	ch, parentCh *discord.Channel,
+	err error,
+) {
+	if guildID.IsValid() {
+		g, err = s.Guild(guildID)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		g.Roles, err = s.Roles(guildID)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
+	// get the channel
+	ch, err = s.Channel(channelID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	if IsThread(ch) {
+		parentCh, err = s.Channel(ch.ParentID)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
+	return g, ch, parentCh, nil
 }
