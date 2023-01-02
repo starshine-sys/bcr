@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	emperror.dev/errors v0.8.0
-	github.com/diamondburned/arikawa/v3 v3.0.0-rc.4.0.20220214064026-6dc189519c4e
+	github.com/diamondburned/arikawa/v3 v3.1.1-0.20230102074614-dc3453beaac9
 )
 
 require (
