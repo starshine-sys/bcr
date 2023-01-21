@@ -47,6 +47,8 @@ func NewFromState(s *state.State) *Router {
 		selects:       make(map[componentKey]*handler[*SelectContext]),
 	}
 
+	r.CollectFunc = r.DefaultCollectFunc
+
 	return r
 }
 
