@@ -102,7 +102,7 @@ func (r *Router) executeSlash(isTopLevel bool, ctx *SlashContext, cmds map[strin
 
 	if cmd.Permissions != 0 {
 		if ctx.Member != nil && ctx.Guild != nil {
-			if !discord.CalcOverwrites(*ctx.Guild, *ctx.Channel, *ctx.Member).Has(cmd.Permissions) {
+			if !discord.CalcOverrides(*ctx.Guild, *ctx.Channel, *ctx.Member, ctx.Guild.Roles).Has(cmd.Permissions) {
 				err = ctx.SendEphemeral(fmt.Sprintf(":x: You are not allowed to use this command. You are missing the following permissions:\n> ```%v```", strings.Join(PermStrings(cmd.Permissions), ", ")))
 				return errCommand(err)
 			}

@@ -104,7 +104,7 @@ func (r *Router) execInner(ctx *Context, cmds map[string]*Command, mu *sync.RWMu
 			_, err = ctx.Send(":x: This command cannot be used in DMs.")
 			return errCommandRun
 		}
-		if !discord.CalcOverwrites(*ctx.Guild, *ctx.Channel, *ctx.Member).Has(c.Permissions) {
+		if !discord.CalcOverrides(*ctx.Guild, *ctx.Channel, *ctx.Member, ctx.Guild.Roles).Has(c.Permissions) {
 			_, err = ctx.Sendf(":x: You are not allowed to use this command. You are missing the following permissions:\n> ```%v```", strings.Join(PermStrings(c.Permissions), ", "))
 			// if there's an error, return it
 			if err != nil {
