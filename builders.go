@@ -28,6 +28,12 @@ type AutocompleteBuilder struct {
 	check Check[*AutocompleteContext]
 }
 
+// Check adds a check to this modal handler.
+func (c *AutocompleteBuilder) Check(check Check[*AutocompleteContext]) *AutocompleteBuilder {
+	c.check = check
+	return c
+}
+
 // Exec adds this autocomplete handler to the router.
 func (c *AutocompleteBuilder) Exec(hn HandlerFunc[*AutocompleteContext]) {
 	c.r.autocompletes[c.path] = &handler[*AutocompleteContext]{

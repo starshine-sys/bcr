@@ -22,7 +22,8 @@ type Context struct {
 	Channel       *discord.Channel
 	ParentChannel *discord.Channel
 
-	deferred bool
+	deferred  bool
+	Responded bool
 }
 
 func (r *Router) NewRootContext(ic *gateway.InteractionCreateEvent) (ctx *Context, err error) {
@@ -70,7 +71,7 @@ func (ctx *Context) DeferEphemeral() error {
 	err := ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
 		Type: api.DeferredMessageInteractionWithSource,
 		Data: &api.InteractionResponseData{
-			Flags: api.EphemeralResponse,
+			Flags: discord.EphemeralMessage,
 		},
 	})
 	if err != nil {
@@ -86,19 +87,24 @@ func (ctx *Context) Reply(content string, embeds ...discord.Embed) error {
 }
 
 func (ctx *Context) ReplyEphemeral(content string, embeds ...discord.Embed) error {
-	return ctx.reply(api.EphemeralResponse, content, embeds)
+	return ctx.reply(discord.EphemeralMessage, content, embeds)
 }
 
-func (ctx *Context) reply(flags api.InteractionResponseFlags, content string, embeds []discord.Embed) error {
+func (ctx *Context) reply(flags discord.MessageFlags, content string, embeds []discord.Embed) error {
 	if ctx.deferred {
 		_, err := ctx.State.EditInteractionResponse(ctx.Event.AppID, ctx.InteractionToken, api.EditInteractionResponseData{
 			Content: option.NewNullableString(content),
 			Embeds:  &embeds,
 		})
-		return err
+		if err != nil {
+			return err
+		}
+
+		ctx.Responded = true
+		return nil
 	}
 
-	return ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
+	err := ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
 		Type: api.MessageInteractionWithSource,
 		Data: &api.InteractionResponseData{
 			Content: option.NewNullableString(content),
@@ -106,6 +112,12 @@ func (ctx *Context) reply(flags api.InteractionResponseFlags, content string, em
 			Flags:   flags,
 		},
 	})
+	if err != nil {
+		return err
+	}
+
+	ctx.Responded = true
+	return nil
 }
 
 // Ctx implements HasContext
@@ -129,11 +141,27 @@ func (ctx *Context) ReplyComplex(data api.InteractionResponseData) error {
 			AllowedMentions: data.AllowedMentions,
 			Files:           data.Files,
 		})
-		return err
+		if err != nil {
+			return err
+		}
+
+		ctx.Responded = true
+		return nil
 	}
 
-	return ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
+	err := ctx.State.RespondInteraction(ctx.InteractionID, ctx.InteractionToken, api.InteractionResponse{
 		Type: api.MessageInteractionWithSource,
 		Data: &data,
 	})
+	if err != nil {
+		return err
+	}
+
+	ctx.Responded = true
+	return nil
+}
+
+func (ctx *Context) Followup(appID discord.AppID, data api.InteractionResponseData) (*discord.Message, error) {
+	msg, err := ctx.State.FollowUpInteraction(appID, ctx.InteractionToken, data)
+	return msg, err
 }

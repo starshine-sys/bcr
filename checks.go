@@ -112,7 +112,7 @@ func overwrites(g *discord.Guild, ch *discord.Channel, m *discord.Member) discor
 	if g == nil || ch == nil || m == nil {
 		return dmPermissions
 	}
-	return discord.CalcOverwrites(*g, *ch, *m)
+	return discord.CalcOverrides(*g, *ch, *m, g.Roles)
 }
 
 func guildPerms(g discord.Guild, m discord.Member) discord.Permissions {
